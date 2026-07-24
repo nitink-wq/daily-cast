@@ -1,0 +1,13 @@
+# The experiment config ships as a ConfigMap so re-contenting / A-B changes
+# are a config rollout, not an image rebuild. Sync the data key with
+# config/experiment.config.json (e.g. via:
+#   kubectl create configmap daily-cast-config \
+#     --from-file=experiment.config.json=config/experiment.config.json \
+#     --dry-run=client -o yaml | kubectl apply -f - )
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: daily-cast-config
+data:
+  experiment.config.json: |
+    { "replace": "with the contents of config/experiment.config.json" }

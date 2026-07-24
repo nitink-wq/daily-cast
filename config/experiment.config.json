@@ -1,0 +1,145 @@
+{
+  "_note": "All user-visible content lives here. Values below are placeholder copy for the scaffold — edit freely and restart; logic never depends on the wording. Chapter count, cap and split are the A/B knobs.",
+
+  "rewardCapPerDay": 100,
+
+  "lifetimeReward": {
+    "_note": "Experiment runs ~2 weeks; a user's total winnings across ALL days stay under totalBudget (90 < the 100 promised). First days follow earlyDaySchedule per user (participation days, not calendar); after that a day pays with laterWinChance, amount drawn from laterGrants. Any payout is at least minGrant; 0-coin days are expected.",
+    "totalBudget": 90,
+    "minGrant": 10,
+    "earlyDaySchedule": [10, 10, 20],
+    "laterWinChance": 0.45,
+    "laterGrants": [10, 20, 30]
+  },
+
+  "coinCredit": {
+    "_note": "Fields sent to the internal Coin API (server-side only). {day} in the description is replaced with the product day.",
+    "purpose": "daily_dice_reward",
+    "source": "daily_cast",
+    "descriptionTemplate": "Daily Dice winnings {day}"
+  },
+
+  "chapters": [
+    {
+      "key": "energy",
+      "label": "Your energy today",
+      "openLoop": false,
+      "sampleVariants": [
+        { "body": "[Chapter 1 variant A — a short read on the day's energy for the caster.]" },
+        { "body": "[Chapter 1 variant B — a short read on the day's energy for the caster.]" },
+        { "body": "[Chapter 1 variant C — a short read on the day's energy for the caster.]" },
+        { "body": "[Chapter 1 variant D — a short read on the day's energy for the caster.]" },
+        { "body": "[Chapter 1 variant E — a short read on the day's energy for the caster.]" },
+        { "body": "[Chapter 1 variant F — a short read on the day's energy for the caster.]" },
+        { "body": "[Chapter 1 variant G — a short read on the day's energy for the caster.]" },
+        { "body": "[Chapter 1 variant H — a short read on the day's energy for the caster.]" }
+      ]
+    },
+    {
+      "key": "watch",
+      "label": "What to watch for",
+      "openLoop": false,
+      "sampleVariants": [
+        { "body": "[Chapter 2 variant A — one concrete thing to notice or lean into today.]" },
+        { "body": "[Chapter 2 variant B — one concrete thing to notice or lean into today.]" },
+        { "body": "[Chapter 2 variant C — one concrete thing to notice or lean into today.]" },
+        { "body": "[Chapter 2 variant D — one concrete thing to notice or lean into today.]" },
+        { "body": "[Chapter 2 variant E — one concrete thing to notice or lean into today.]" },
+        { "body": "[Chapter 2 variant F — one concrete thing to notice or lean into today.]" },
+        { "body": "[Chapter 2 variant G — one concrete thing to notice or lean into today.]" },
+        { "body": "[Chapter 2 variant H — one concrete thing to notice or lean into today.]" }
+      ]
+    },
+    {
+      "key": "question",
+      "label": "The question your roll raises",
+      "openLoop": true,
+      "sampleVariants": [
+        { "body": "[Chapter 3 variant A — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" },
+        { "body": "[Chapter 3 variant B — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" },
+        { "body": "[Chapter 3 variant C — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" },
+        { "body": "[Chapter 3 variant D — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" },
+        { "body": "[Chapter 3 variant E — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" },
+        { "body": "[Chapter 3 variant F — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" },
+        { "body": "[Chapter 3 variant G — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" },
+        { "body": "[Chapter 3 variant H — ends unresolved in its own text, pointing at something personal only an astrologer can answer.]" }
+      ]
+    }
+  ],
+
+  "anchorsByWeekday": {
+    "Monday":    { "label": "[Monday anchor — e.g. Somvar · day of Chandra]", "detail": "[one-line panchang flavour for Monday]" },
+    "Tuesday":   { "label": "[Tuesday anchor — e.g. Mangalvar · day of Mangal]", "detail": "[one-line panchang flavour for Tuesday]" },
+    "Wednesday": { "label": "[Wednesday anchor — e.g. Budhvar · day of Budh]", "detail": "[one-line panchang flavour for Wednesday]" },
+    "Thursday":  { "label": "[Thursday anchor — e.g. Guruvar · day of Brihaspati]", "detail": "[one-line panchang flavour for Thursday]" },
+    "Friday":    { "label": "[Friday anchor — e.g. Shukravar · day of Shukra]", "detail": "[one-line panchang flavour for Friday]" },
+    "Saturday":  { "label": "[Saturday anchor — e.g. Shanivar · day of Shani]", "detail": "[one-line panchang flavour for Saturday]" },
+    "Sunday":    { "label": "[Sunday anchor — e.g. Ravivar · day of Surya]", "detail": "[one-line panchang flavour for Sunday]" }
+  },
+
+  "astrologer": {
+    "name": "Acharya Durgeshnand",
+    "skill": "Vedic Astrology",
+    "language": "Hindi",
+    "rating": "4.8",
+    "experienceYears": 14,
+    "pricePerMin": 20,
+    "availability": "online",
+    "avatarInitial": "A"
+  },
+
+  "consultTarget": {
+    "deeplink": "astrolokal://consult/acharya-durgeshnand",
+    "_note": "CTA destination. Context (day, rolls, open-question item id) is appended as query params server-side; swap in the real deeplink/URL without touching logic."
+  },
+
+  "copy": {
+    "_note": "Keep every label in simple, everyday words (tier-2/3 audience). Astro flavour lives in the reading content, never in buttons or labels.",
+    "ledger": {
+      "title": "[ledger title — plain, e.g. TOTAL WON]",
+      "unit": "coins",
+      "claimCta": "[claim label — e.g. Claim]",
+      "claimedLabel": "[claimed label — e.g. Claimed ✓]"
+    },
+    "cast": {
+      "heading": "[section heading — e.g. 🎲 Roll & Win]",
+      "prizeLine": "[prize strip line, {max} = biggest tier — e.g. Win up to {max} coins every day]",
+      "rollCta": "[roll label — e.g. Roll the dice]",
+      "rollingLabel": "[while rolling — e.g. Rolling…]",
+      "doneTitle": "[terminal title — e.g. Done for today!]",
+      "doneBody": "[terminal body — e.g. Come back tomorrow for 3 free rolls.]"
+    },
+    "result": {
+      "winTitle": "[win title — plain, e.g. Hooray, you won!]",
+      "noWinTitle": "[zero-coin title — e.g. Oh no, no coins this time]",
+      "noWinNote": "[zero-coin line — e.g. Better luck on your next roll!]",
+      "insightKicker": "[label above the insight — e.g. What your roll says]",
+      "rollAgainCta": "[close button while rolls remain; closing auto-rolls — e.g. Roll again]",
+      "redeemCta": "[final-screen redeem button — e.g. Redeem coins]",
+      "redeemedLabel": "[after redeeming — e.g. Redeemed ✓]",
+      "continueCta": "[close button on the final roll — e.g. Continue]"
+    },
+    "progress": {
+      "leftTemplate": "[{n} of {total} rolls left today]",
+      "nextRollTemplate": "[countdown to the daily reset, {time} slot — e.g. Next free roll in {time}]"
+    },
+    "chapters": {
+      "heading": "[reading heading — e.g. 📖 Today's reading]",
+      "lockedHint": "[locked hint — e.g. Roll the dice to unlock]"
+    },
+    "consult": {
+      "bubbleLine": "[astrologer chat-bubble hook — e.g. These 3 signs are telling you something. Let me explain what.]",
+      "onlineLine": "[line under the bubble — no names/prices/ratings — e.g. Consult an astro by clicking the button below]",
+      "cta": "[sticky button label — e.g. Ask an Astrologer]"
+    },
+    "blocked": {
+      "title": "[no-user state title — e.g. Login required]",
+      "body": "[e.g. Please login from the AstroLokal app to access this page.]"
+    },
+    "error": {
+      "title": "[soft-fail title]",
+      "body": "[soft-fail body — try again shortly]",
+      "retry": "[retry label]"
+    }
+  }
+}

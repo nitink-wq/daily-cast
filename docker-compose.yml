@@ -1,0 +1,64 @@
+# Local dev/test stack. Mirrors the production topology:
+#   db  ->  migrate (runs once)  ->  pool (publishes today's content)  ->  app
+# Open http://localhost:3000/?user_id=test-user-1 after `docker compose up`.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: dailycast
+      POSTGRES_PASSWORD: dailycast
+      POSTGRES_DB: dailycast
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dailycast -d dailycast"]
+      interval: 3s
+      timeout: 3s
+      retries: 15
+
+  # One-shot: applies pending migrations exactly once (node-pg-migrate keeps
+  # its own ledger in the pgmigrations table). Same pattern as the k8s Job.
+  migrate:
+    build: .
+    command: npm run migrate:up
+    environment:
+      DATABASE_URL: postgres://dailycast:dailycast@db:5432/dailycast
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # One-shot: publishes today's content pool (idempotent; skips if present).
+  # In production this is the daily CronJob.
+  pool:
+    build: .
+    command: npm run pool:generate
+    environment:
+      DATABASE_URL: postgres://dailycast:dailycast@db:5432/dailycast
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgres://dailycast:dailycast@db:5432/dailycast
+      PORT: 3000
+      # COIN_API_URL/USER/PASS unset -> sealed at-most-once stub ledger
+      # (coin_credit_attempts table). Set all three to hit the real dev API:
+      # COIN_API_URL: https://dev-api.astrolokal.com/v1/system-transactions/
+      # COIN_API_USER / COIN_API_PASS: dev Basic-auth credentials
+    ports:
+      - "3000:3000"
+    depends_on:
+      pool:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:

@@ -1,0 +1,34 @@
+# Run-once migration job — apply this (with a fresh name or `kubectl replace`)
+# as the first step of every deploy, before rolling the Deployment:
+#   kubectl apply -f k8s/migrate-job.yaml && kubectl wait --for=condition=complete job/daily-cast-migrate --timeout=120s
+#
+# Safe to run repeatedly and from any number of deploys: node-pg-migrate
+# records applied migrations in the pgmigrations table, so each migration
+# executes exactly once per database.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: daily-cast-migrate
+  labels:
+    app: daily-cast
+    role: migrate
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: daily-cast
+        role: migrate
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: migrate
+          image: your-registry/daily-cast:latest # set by CI
+          command: ["npm", "run", "migrate:up"]
+          envFrom:
+            - secretRef:
+                name: daily-cast-secrets
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { cpu: 250m, memory: 256Mi }

@@ -1,0 +1,47 @@
+# Daily content-pool job (brief §11): publishes the day's AI-generated pool
+# shortly after the IST midnight boundary. Idempotent — a concurrent or
+# repeated run exits cleanly if the day's pool already exists.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: daily-cast-pool
+  labels:
+    app: daily-cast
+    role: pool
+spec:
+  # 00:05 IST == 18:35 UTC previous day
+  schedule: "35 18 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: daily-cast
+            role: pool
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: pool
+              image: your-registry/daily-cast:latest # set by CI
+              command: ["npm", "run", "pool:generate"]
+              env:
+                - name: EXPERIMENT_CONFIG_PATH
+                  value: /etc/daily-cast/experiment.config.json
+              envFrom:
+                - secretRef:
+                    name: daily-cast-secrets
+              volumeMounts:
+                - name: experiment-config
+                  mountPath: /etc/daily-cast
+                  readOnly: true
+              resources:
+                requests: { cpu: 50m, memory: 128Mi }
+                limits: { cpu: 250m, memory: 256Mi }
+          volumes:
+            - name: experiment-config
+              configMap:
+                name: daily-cast-config

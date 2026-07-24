@@ -1,0 +1,71 @@
+# Stateless web tier — safe at any replica count because every piece of
+# reward/attempt/content state lives in Postgres behind row locks.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: daily-cast
+  labels:
+    app: daily-cast
+    role: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: daily-cast
+      role: web
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: daily-cast
+        role: web
+    spec:
+      containers:
+        - name: web
+          image: your-registry/daily-cast:latest # set by CI
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: EXPERIMENT_CONFIG_PATH
+              value: /etc/daily-cast/experiment.config.json
+          envFrom:
+            - secretRef:
+                name: daily-cast-secrets
+          volumeMounts:
+            - name: experiment-config
+              mountPath: /etc/daily-cast
+              readOnly: true
+          readinessProbe:
+            httpGet: { path: /readyz, port: 3000 }
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: 3000 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 100m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+      volumes:
+        - name: experiment-config
+          configMap:
+            name: daily-cast-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: daily-cast
+  labels:
+    app: daily-cast
+spec:
+  selector:
+    app: daily-cast
+    role: web
+  ports:
+    - port: 80
+      targetPort: 3000

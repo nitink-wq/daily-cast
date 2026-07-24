@@ -1,0 +1,6 @@
+node_modules/
+.env
+*.log
+.DS_Store
+# dev-only artifact: index.html with a mock API injected for local preview
+preview.html
