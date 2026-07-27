@@ -14,7 +14,7 @@
 
   "coinCredit": {
     "_note": "Fields sent to the internal Coin API (server-side only). {day} in the description is replaced with the product day.",
-    "purpose": "reward",
+    "purpose": "promo",
     "source": "daily_cast",
     "descriptionTemplate": "Daily Dice winnings {day}"
   },
