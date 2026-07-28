@@ -91,18 +91,23 @@ roll the deployment.
 
 ## Daily content pool (§11)
 
-`scripts/generate-daily-pool.js` publishes one pool per IST day:
-`content_pool_days` (day + astro anchor) and `content_pool_items` (~20–30
-items, ids 1..N, partitioned by chapter). The AI step is stubbed with the
-config's `sampleVariants` — swap the `generateItems()` function for a real
-model call; storage and serving don't change. On a user's first cast the
-selected item id is persisted to their daily record, so their 3 chapters are
-identical on every revisit that day. Partitioning by chapter guarantees one
-user's chapters never collide on an item.
+`src/pool.js` publishes one pool per IST day: `content_pool_days` (day +
+astro anchor) and `content_pool_items` (~20–30 items, ids 1..N, partitioned
+by chapter). Content comes from **Gemini** when `GEMINI_API_KEY` is set
+(`src/gemini.js`, model `GEMINI_MODEL`, default `gemini-2.5-flash`); on any
+Gemini failure — or with no key — it falls back to the config's
+`sampleVariants`, so publishing never fails because of the model. On a
+user's first cast the selected item id is persisted to their daily record,
+so their 3 chapters are identical on every revisit that day. Partitioning by
+chapter guarantees one user's chapters never collide on an item.
 
-In production the script runs as the `daily-cast-pool` CronJob (00:05 IST).
-It is idempotent; `--force` replaces a day's pool but refuses if any user
-already cast that day.
+**The server schedules itself** — no external CronJob needed: it publishes
+today's pool at boot and re-checks every 5 minutes, so the new day's pool
+appears within minutes of midnight IST; each API request also self-heals on
+demand. Multi-pod safe via a per-day advisory lock, idempotent once the pool
+exists. `scripts/generate-daily-pool.js` remains for manual backfills
+(`--day=YYYY-MM-DD`) and `--force` replacement (refused if any user already
+cast that day). `k8s/pool-cronjob.yaml` is obsolete — kept only as reference.
 
 ## Integrity model (§10)
 

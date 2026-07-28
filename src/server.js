@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config.js';
 import { healthcheck, closePool } from './db.js';
+import { ensurePoolForToday } from './pool.js';
 import { getSession, cast, claim, isValidUserId, StateError } from './state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -56,10 +57,21 @@ function sendError(res, err) {
   return res.status(500).json({ error: 'INTERNAL', copy: cfg.copy.error });
 }
 
+// Self-healing pool: if the nightly pass hasn't produced today's pool yet
+// (pod restart, first request just after midnight IST), publish it on demand.
+// Failures are logged and swallowed — the state layer then raises the usual
+// POOL_MISSING so the client shows the retryable error card.
+function ensurePool() {
+  return ensurePoolForToday(cfg).catch((err) => {
+    console.error('[pool] on-demand publish failed:', err.message);
+  });
+}
+
 // --- API -------------------------------------------------------------------
 app.get('/api/session', async (req, res) => {
   try {
     const userId = requireUser(req);
+    await ensurePool();
     res.json(await getSession(userId));
   } catch (err) {
     sendError(res, err);
@@ -69,6 +81,7 @@ app.get('/api/session', async (req, res) => {
 app.post('/api/cast', async (req, res) => {
   try {
     const userId = requireUser(req);
+    await ensurePool();
     res.json(await cast(userId));
   } catch (err) {
     sendError(res, err);
@@ -89,6 +102,14 @@ const port = Number(process.env.PORT || 3000);
 const server = app.listen(port, () => {
   console.log(`[daily-cast] listening on :${port}`);
 });
+
+// Built-in nightly generation (replaces the external CronJob): publish
+// today's pool at boot, then re-check every 5 minutes so the new day's pool
+// (Gemini-generated when GEMINI_API_KEY is set) appears within minutes of
+// midnight IST. ensurePoolForToday() is a free in-memory check once the
+// day's pool exists, and is multi-pod safe via an advisory lock.
+ensurePool();
+setInterval(ensurePool, 5 * 60 * 1000).unref();
 
 for (const signal of ['SIGTERM', 'SIGINT']) {
   process.on(signal, () => {
