@@ -2,19 +2,20 @@
   "_note": "All user-visible content lives here. Edit freely and restart; logic never depends on the wording. Chapter count, cap and split are the A/B knobs.",
   "rewardCapPerDay": 100,
   "lifetimeReward": {
-    "_note": "Experiment runs ~2 weeks; a user's total winnings across ALL days stay under totalBudget (90 < the 100 promised). First days follow earlyDaySchedule per user (participation days, not calendar); after that a day pays with laterWinChance, amount drawn from laterGrants. Any payout is at least minGrant; 0-coin days are expected.",
+    "_note": "Experiment runs ~2 weeks; a user's total winnings across ALL days stay under totalBudget. firstDayPlan fixes the user's FIRST-ever day per roll (10 on the very first roll, nothing after). From their second day onward a day pays with laterWinChance, amount drawn from laterGrants (earlyDaySchedule is empty = no further warm-up days). Any payout is at least minGrant; 0-coin days are expected.",
     "totalBudget": 90,
     "minGrant": 10,
-    "earlyDaySchedule": [
-      10,
-      10,
-      20
-    ],
+    "earlyDaySchedule": [],
     "laterWinChance": 0.45,
     "laterGrants": [
       10,
       20,
       30
+    ],
+    "firstDayPlan": [
+      10,
+      0,
+      0
     ]
   },
   "coinCredit": {

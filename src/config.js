@@ -33,6 +33,11 @@ export function loadConfig() {
       lr.laterGrants.some((g) => !Number.isInteger(g) || g < lr.minGrant)) {
     throw new Error('config: lifetimeReward needs totalBudget, minGrant, earlyDaySchedule, laterWinChance (0..1), laterGrants (each >= minGrant)');
   }
+  if (lr.firstDayPlan !== undefined &&
+      (!Array.isArray(lr.firstDayPlan) || lr.firstDayPlan.length === 0 ||
+       lr.firstDayPlan.some((g) => !Number.isInteger(g) || g < 0))) {
+    throw new Error('config: lifetimeReward.firstDayPlan must be a non-empty array of non-negative integers');
+  }
   const openLoopCount = raw.chapters.filter((c) => c.openLoop).length;
   if (openLoopCount !== 1) {
     throw new Error('config: exactly one chapter must be flagged openLoop');

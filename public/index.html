@@ -322,11 +322,11 @@
           <div class="scene" role="img" aria-label="dice">
             <div class="mover" id="mover">
               <div class="cube idle" id="cube">
-                <div class="cf cf1"><b>10</b><em>coins</em></div>
+                <div class="cf cf1 big"><b>100</b><em>coins</em></div>
                 <div class="cf cf2"><b>20</b><em>coins</em></div>
                 <div class="cf cf3"><b>30</b><em>coins</em></div>
                 <div class="cf cf4 luck"><b>Better luck<br>next time</b></div>
-                <div class="cf cf5 big"><b>100</b><em>coins</em></div>
+                <div class="cf cf5"><b>10</b><em>coins</em></div>
                 <div class="cf cf6 luck"><b>Better luck<br>next time</b></div>
               </div>
             </div>
@@ -470,19 +470,19 @@
   // reward the server granted. Orientation = [rotX, rotY] that brings that
   // face front-on. -------
   const CUBE_FACES = [
-    { sel: '.cf1', value: 10,  orient: [0, 0]    }, // front
+    { sel: '.cf1', value: 100, orient: [0, 0]    }, // front (100 faces out at rest)
     { sel: '.cf2', value: 20,  orient: [0, -90]  }, // right
     { sel: '.cf3', value: 30,  orient: [0, 180]  }, // back
     { sel: '.cf4', value: 0,   orient: [0, 90]   }, // left  (better luck)
-    { sel: '.cf5', value: 100, orient: [-90, 0]  }, // top
+    { sel: '.cf5', value: 10,  orient: [-90, 0]  }, // top
     { sel: '.cf6', value: 0,   orient: [90, 0]   }, // bottom (better luck)
   ];
   function landingFace(reward) {
     // restore the front face's default label (a rare odd amount may have
     // been printed on it by a previous roll)
     const front = $('cube').querySelector('.cf1');
-    front.firstElementChild.textContent = '10';
-    front.classList.remove('big');
+    front.firstElementChild.textContent = '100';
+    front.classList.add('big');
     if (!(Number(reward) > 0)) {
       return CUBE_FACES[Math.random() < 0.5 ? 3 : 5];
     }

@@ -71,6 +71,24 @@ function splitAcrossCasts(total, casts, minGrant) {
   return plan;
 }
 
+// The reward plan for a user's day. Their FIRST-ever day is deterministic
+// (PM 2026-08-04): firstDayPlan pays exactly its listed amounts in roll
+// order — 10 on the very first roll, nothing on the rest of day 1. Every
+// later day uses the random plan (computeDayTotal + splitAcrossCasts).
+// The fixed plan is still clamped to the lifetime budget and the daily cap.
+function buildRewardPlan(cfg, stats) {
+  const lr = cfg.lifetimeReward;
+  if (stats.daysPlayed === 0 && Array.isArray(lr.firstDayPlan) && lr.firstDayPlan.length > 0) {
+    let room = Math.min(lr.totalBudget - stats.lifetimeEarned, cfg.rewardCapPerDay);
+    return Array.from({ length: cfg.castsPerDay }, (_, i) => {
+      const grant = Math.max(0, Math.min(Math.trunc(lr.firstDayPlan[i] || 0), room));
+      room -= grant;
+      return grant;
+    });
+  }
+  return splitAcrossCasts(computeDayTotal(cfg, stats), cfg.castsPerDay, lr.minGrant);
+}
+
 // Lifetime winnings = SUM(earned + redeemed_amount): `earned` is zeroed on
 // redeem (the visible balance drops to 0) and the paid amount moves to
 // `redeemed_amount`; expired unredeemed coins keep counting via `earned`.
@@ -111,9 +129,7 @@ async function lockDailyState(client, userId, day, cfg) {
   // Insert-if-absent then lock. ON CONFLICT DO NOTHING makes concurrent
   // first-touch from two pods safe; FOR UPDATE serializes everything after.
   const stats = await fetchLifetimeStats(client, userId, day);
-  const plan = splitAcrossCasts(
-    computeDayTotal(cfg, stats), cfg.castsPerDay, cfg.lifetimeReward.minGrant,
-  );
+  const plan = buildRewardPlan(cfg, stats);
   await client.query(
     `INSERT INTO user_daily_states (user_id, day, reward_plan)
      VALUES ($1, $2, $3)
