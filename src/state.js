@@ -186,6 +186,7 @@ function buildSessionPayload({ cfg, day, poolDay, items, state }) {
     claimable: earned > 0 && !claimed,
     chapters,
     nudge: complete ? { consultUrl: buildConsultUrl(cfg, day, selections) } : null,
+    nav: cfg.nav || null,
     copy: cfg.copy,
   };
 }

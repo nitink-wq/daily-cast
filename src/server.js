@@ -4,7 +4,8 @@ import express from 'express';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config.js';
-import { healthcheck, closePool } from './db.js';
+import { healthcheck, closePool, query } from './db.js';
+import { todayKey } from './day.js';
 import { ensurePoolForToday } from './pool.js';
 import { getSession, cast, claim, isValidUserId, StateError } from './state.js';
 
@@ -94,6 +95,39 @@ app.post('/api/claim', async (req, res) => {
     res.json(await claim(userId));
   } catch (err) {
     sendError(res, err);
+  }
+});
+
+// --- analytics ------------------------------------------------------------
+// Fire-and-forget event sink (client uses sendBeacon). Responds 204 before
+// the insert: analytics must never break or slow the product. Super
+// properties user_id + day; day is stamped server-side (product day, IST) so
+// the client can't spoof it.
+const TRACK_EVENTS = new Set([
+  'viewed_daily_dice',
+  'tap_dice_roll',
+  'tap_dice_roll_continue',
+  'tap_redeem_coins',
+  'tap_final_continue',
+  'tap_talk_to_astro',
+]);
+
+app.post('/api/track', async (req, res) => {
+  res.status(204).end();
+  try {
+    const { user_id: uid, event, source, props } = req.body || {};
+    if (!isValidUserId(uid) || !TRACK_EVENTS.has(event)) return;
+    const safeProps = props && typeof props === 'object' && !Array.isArray(props) ? props : {};
+    await query(
+      `INSERT INTO analytics_events (event_name, user_id, day, screen_name, event_type, source, props)
+       VALUES ($1, $2, $3, 'daily_dice_screen', $4, $5, $6)`,
+      [event, uid, todayKey(),
+       event.startsWith('viewed_') ? 'screen_view' : 'tap',
+       typeof source === 'string' && source ? source.slice(0, 64) : null,
+       JSON.stringify(safeProps)],
+    );
+  } catch (err) {
+    console.error('[track] failed', err.message);
   }
 });
 

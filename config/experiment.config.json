@@ -88,6 +88,11 @@
     "avatarInitial": "A"
   },
 
+  "nav": {
+    "_note": "Webview keeps no browser history. The back arrow posts GO_BACK to the RN shell when available; otherwise it fires this deeplink (same one the Bhagya surfaces use).",
+    "backDeeplink": "astrolokal://BottomTabs?screen=Home"
+  },
+
   "consultTarget": {
     "deeplink": "astrolokal://consult/acharya-durgeshnand",
     "_note": "CTA destination. Context (day, rolls, open-question item id) is appended as query params server-side; swap in the real deeplink/URL without touching logic."
