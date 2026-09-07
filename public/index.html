@@ -829,7 +829,10 @@
     }
   }
 
-  $('backBtn').addEventListener('click', goBack);
+  $('backBtn').addEventListener('click', () => {
+    track('tap_back', 'header', { rolls_used: session ? session.castsUsed : null });
+    goBack();
+  });
   $('rollBtn').addEventListener('click', () => {
     if (!busy && session && !session.complete) track('tap_dice_roll', 'cast_card', { roll_number: session.castsUsed + 1 });
     doRoll();

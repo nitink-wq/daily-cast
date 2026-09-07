@@ -110,6 +110,7 @@ const TRACK_EVENTS = new Set([
   'tap_redeem_coins',
   'tap_final_continue',
   'tap_talk_to_astro',
+  'tap_back',
 ]);
 
 app.post('/api/track', async (req, res) => {
