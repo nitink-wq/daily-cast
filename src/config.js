@@ -1,6 +1,6 @@
 // Loads the experiment config. All user-visible "content" strings live in
-// config (see the brief §6) so the experiment owner can re-content and A/B
-// (chapter count, cap, split, copy) without touching logic.
+// config so the experiment owner can re-content and A/B (casts per day,
+// reward schedule, cap, copy) without touching logic.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,32 +17,23 @@ export function loadConfig() {
   const raw = JSON.parse(readFileSync(CONFIG_PATH, 'utf8'));
 
   // Minimal structural validation — fail loudly at boot, not mid-request.
-  if (!Array.isArray(raw.chapters) || raw.chapters.length < 1) {
-    throw new Error('config: chapters must be a non-empty array');
+  if (!Number.isInteger(raw.castsPerDay) || raw.castsPerDay < 1) {
+    throw new Error('config: castsPerDay must be a positive integer');
   }
   if (!Number.isInteger(raw.rewardCapPerDay) || raw.rewardCapPerDay < 0) {
     throw new Error('config: rewardCapPerDay must be a non-negative integer');
   }
   const lr = raw.lifetimeReward;
-  if (!lr || !Number.isInteger(lr.totalBudget) || lr.totalBudget <= 0 ||
-      !Number.isInteger(lr.minGrant) || lr.minGrant <= 0 ||
-      !Array.isArray(lr.earlyDaySchedule) ||
-      lr.earlyDaySchedule.some((g) => !Number.isInteger(g) || g < 0) ||
-      typeof lr.laterWinChance !== 'number' || lr.laterWinChance < 0 || lr.laterWinChance > 1 ||
-      !Array.isArray(lr.laterGrants) || lr.laterGrants.length === 0 ||
-      lr.laterGrants.some((g) => !Number.isInteger(g) || g < lr.minGrant)) {
-    throw new Error('config: lifetimeReward needs totalBudget, minGrant, earlyDaySchedule, laterWinChance (0..1), laterGrants (each >= minGrant)');
+  if (!lr || !Number.isInteger(lr.totalBudget) || lr.totalBudget <= 0) {
+    throw new Error('config: lifetimeReward.totalBudget must be a positive integer');
   }
-  if (lr.firstDayPlan !== undefined &&
-      (!Array.isArray(lr.firstDayPlan) || lr.firstDayPlan.length === 0 ||
-       lr.firstDayPlan.some((g) => !Number.isInteger(g) || g < 0))) {
-    throw new Error('config: lifetimeReward.firstDayPlan must be a non-empty array of non-negative integers');
+  if (!Array.isArray(lr.rewardSchedule) || lr.rewardSchedule.length < 1 ||
+      lr.rewardSchedule.some((day) =>
+        !Array.isArray(day) || day.length !== raw.castsPerDay ||
+        day.some((g) => !Number.isInteger(g) || g < 0))) {
+    throw new Error(`config: lifetimeReward.rewardSchedule must be a non-empty array of ${raw.castsPerDay}-integer day plans`);
   }
-  const openLoopCount = raw.chapters.filter((c) => c.openLoop).length;
-  if (openLoopCount !== 1) {
-    throw new Error('config: exactly one chapter must be flagged openLoop');
-  }
-  raw.castsPerDay = raw.chapters.length;
+
   cached = raw;
   return cached;
 }

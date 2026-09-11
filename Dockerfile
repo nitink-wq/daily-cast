@@ -1,6 +1,5 @@
-# Node 24 (current LTS). Same image serves three roles: the web app,
-# the one-shot migration job, and the daily pool CronJob — only the
-# command differs.
+# Node 24 (current LTS). Same image serves two roles: the web app and the
+# one-shot migration job — only the command differs.
 FROM node:24-alpine AS base
 
 WORKDIR /app
@@ -14,7 +13,6 @@ COPY src ./src
 COPY public ./public
 COPY config ./config
 COPY migrations ./migrations
-COPY scripts ./scripts
 
 USER node
 EXPOSE 3000

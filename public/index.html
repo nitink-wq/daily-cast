@@ -12,7 +12,7 @@
   /* ==== AstroLokal design tokens (shared with the Bhagya Score surface) ==== */
   :root{
     /* brand palette (2026-08) */
-    --bg-top:#FEEEE9; --bg-bot:#FDD9CE;      /* page background */
+    --bg-top:#FFF8F0; --bg-bot:#FCEEE0;      /* page background */
     --primary:#F45722; --primary-2:#FA9C70; --primary-deep:#D8420F;
     --gold:#FFBF6E;                          /* secondary amber */
     --cta-a:#F45722; --cta-b:#FA9C70;        /* CTA → interactive state */
@@ -38,18 +38,13 @@
   }
   .serif{font-family:'Lora',Georgia,serif}
   .phone{max-width:440px;margin:0 auto;min-height:100%;position:relative;display:flex;flex-direction:column}
-  .scroll{flex:1 1 auto;padding:calc(var(--pad) + env(safe-area-inset-top)) var(--pad) 170px;display:flex;flex-direction:column;gap:16px}
+  .scroll{flex:1 1 auto;padding:calc(var(--pad) + env(safe-area-inset-top)) var(--pad) 40px;display:flex;flex-direction:column;gap:18px}
 
-  /* ---- corner-bracket card ---- */
-  .bx{position:relative;background:var(--cream);border-radius:var(--radius);box-shadow:var(--shadow)}
-  .cb{position:absolute;width:18px;height:18px;pointer-events:none}
-  .cb.tl{top:12px;left:12px;border-top:1.6px solid var(--brk);border-left:1.6px solid var(--brk);border-radius:6px 0 0 0}
-  .cb.tr{top:12px;right:12px;border-top:1.6px solid var(--brk);border-right:1.6px solid var(--brk);border-radius:0 6px 0 0}
-  .cb.bl{bottom:12px;left:12px;border-bottom:1.6px solid var(--brk);border-left:1.6px solid var(--brk);border-radius:0 0 0 6px}
-  .cb.br{bottom:12px;right:12px;border-bottom:1.6px solid var(--brk);border-right:1.6px solid var(--brk);border-radius:0 0 6px 0}
+  /* ---- card ---- */
+  .bx{background:var(--cream);border-radius:var(--radius);box-shadow:var(--shadow)}
 
   /* ---- header (compact): back arrow left, logo dead-centre ---- */
-  .brandbar{position:relative;display:flex;justify-content:center;align-items:center;padding-top:2px}
+  .brandbar{position:relative;display:flex;justify-content:center;align-items:center;padding-top:2px;padding-bottom:4px}
   .back-btn{position:absolute;left:0;top:50%;transform:translateY(-50%);
     width:38px;height:38px;border:none;border-radius:50%;cursor:pointer;
     background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm);
@@ -61,8 +56,7 @@
     background:transparent;padding:6px 14px 6px 9px;
   }
   .brand-pill .logo-img{width:30px;height:30px;display:block;object-fit:contain}
-  .brand-pill .wm{font-size:17px;font-weight:700;letter-spacing:.2px;
-    background:linear-gradient(90deg,var(--primary),var(--primary-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand-pill .wm{font-size:17px;font-weight:700;letter-spacing:.2px;color:var(--ink)}
 
   /* ---- section title ---- */
   .sec-title{display:flex;align-items:center;gap:9px;font-family:'Lora',serif;
@@ -77,26 +71,22 @@
   .grad-btn:disabled{background:#EADFD3;color:#B3A392;box-shadow:none;cursor:default}
 
   /* ---- B. reward ledger ---- */
-  .ledger{display:flex;align-items:center;gap:13px;padding:18px 18px}
-  .ledger .coin{width:30px;height:30px;flex:none;align-self:center;
+  .ledger{display:flex;align-items:center;gap:13px;padding:20px 18px}
+  .ledger .coin{width:32px;height:32px;flex:none;align-self:center;
     filter:drop-shadow(0 3px 6px rgba(214,150,20,.35))}
   .ledger-info{flex:1;min-width:0}
   .ledger-title{font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.3px}
-  .ledger-amount{font-size:21px;font-weight:800;line-height:1.25}
-  .ledger-amount .unit{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+  .ledger-amount{font-size:23px;font-weight:800;line-height:1.3}
+  .ledger-amount .unit{font-size:13px;font-weight:600;color:var(--ink-2)}
   .btn-claim{font-family:inherit;font-size:13px;font-weight:700;color:#fff;border:none;cursor:pointer;
-    background:linear-gradient(90deg,var(--cta-a),var(--cta-b));border-radius:999px;padding:8px 16px;min-height:34px;
-    align-self:center;
+    background:linear-gradient(90deg,var(--cta-a),var(--cta-b));border-radius:999px;padding:10px 18px;min-height:38px;
+    align-self:center;white-space:nowrap;
     box-shadow:0 6px 16px rgba(238,108,58,.35);transition:transform .12s ease}
   .btn-claim:active{transform:scale(.96)}
   .btn-claim:disabled{background:#EFE4D8;color:#B3A392;box-shadow:none;cursor:default}
-  .btn-claim.claimed{background:#FBF0D6;color:#9A7514;box-shadow:none;font-size:12.5px;padding:9px 14px;white-space:nowrap}
 
   /* ---- C. the roll ---- */
-  .cast{display:flex;flex-direction:column;align-items:center;gap:15px;padding:22px 20px 20px}
-  .prize-line{display:inline-flex;align-items:center;gap:7px;background:var(--cream);border:1px solid var(--cream-2);
-    border-radius:999px;padding:7px 15px;font-size:12.5px;font-weight:700;color:#A87A15;box-shadow:var(--shadow-sm)}
-  .prize-line svg{width:16px;height:16px;flex:none}
+  .cast{display:flex;flex-direction:column;align-items:center;gap:15px;padding:26px 20px 22px}
   .stage{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center}
   .halo{position:absolute;inset:0;border-radius:50%;
     background:radial-gradient(circle,rgba(245,183,29,.38) 0%,rgba(245,183,29,.12) 45%,transparent 70%);
@@ -164,65 +154,24 @@
   .cast-done .dt{font-family:'Lora',serif;font-size:19px;font-weight:600;color:var(--ink)}
   .cast-done .db{font-size:13px;color:var(--ink-2);margin-top:4px;line-height:1.5}
 
-  /* ---- E. reading (one merged card, three insights) ---- */
-  .reading{padding:6px 20px}
-  .insight{padding:17px 0 16px;border-bottom:1px dashed #F0DCC4}
-  .insight:last-of-type{border-bottom:none}
-  .in-label{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;
-    letter-spacing:.12em;text-transform:uppercase;color:#B39068}
-  .insight.unlocked .in-label{color:var(--primary)}
-  .in-label svg{width:13px;height:13px;flex:none;color:#C4AE93}
-  .in-body{font-size:14.5px;line-height:1.62;color:#5A4A40;margin-top:9px;display:none}
-  .insight.unlocked .in-body{display:block}
-  .in-skel{display:none;flex-direction:column;gap:8px;margin-top:12px;filter:blur(5px);pointer-events:none}
-  .in-skel i{height:11px;border-radius:6px;background:linear-gradient(90deg,#EFDFCC,#F6EBDC)}
-  .in-skel i:nth-child(2){width:88%}.in-skel i:nth-child(3){width:58%}
-  .insight.locked .in-skel{display:flex}
-  @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  .pop{animation:pop .5s ease both}
-
-  /* ---- consult: astrologer chat bubble (Complete only, inside the reading card) ---- */
-  .consult-chat{display:none;padding:4px 0 18px}
-  .consult-chat.visible{display:block;animation:pop .5s ease both}
-  .chat-row{display:flex;align-items:flex-start;gap:12px}
-  .avatar{position:relative;width:66px;height:66px;flex:none;border-radius:50%;
-    border:3px solid #fff;box-shadow:0 6px 16px rgba(196,132,74,.28)}
-  .avatar-img{width:100%;height:100%;display:block;object-fit:cover;border-radius:50%}
-  .avatar i{position:absolute;right:2px;bottom:2px;width:13px;height:13px;border-radius:50%;
-    background:var(--good);border:2.5px solid #fff}
-  .bubble{flex:1;min-width:0;background:var(--surface);border-radius:18px;border-top-left-radius:6px;
-    padding:15px 16px 13px;box-shadow:var(--shadow-sm)}
-  .bubble p{font-size:15.5px;font-weight:600;line-height:1.45;color:var(--ink)}
-  .tp{display:flex;gap:4px;margin-top:10px}
-  .tp i{width:6px;height:6px;border-radius:50%;background:#D6C9BB;animation:tpb 1.2s ease-in-out infinite}
-  .tp i:nth-child(2){animation-delay:.18s}.tp i:nth-child(3){animation-delay:.36s}
-  @keyframes tpb{0%,60%,100%{opacity:.4;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
-
-  /* ---- gold redeem button (final result screen) ---- */
-  .btn-gold{font-family:inherit;font-size:16px;font-weight:700;color:#fff;border:none;cursor:pointer;
-    background:linear-gradient(90deg,var(--cta-a),var(--cta-b));border-radius:18px;padding:14px;width:100%;
-    box-shadow:0 8px 20px rgba(244,87,34,.34);transition:transform .12s ease}
-  .btn-gold:active{transform:scale(.985)}
-  .btn-gold.claimed{background:#FBF0D6;color:#9A7514;box-shadow:none;cursor:default}
-  .ov-redeem{display:none;margin-top:18px}
-  .ov-redeem.visible{display:block}
-  .ov-card .grad-btn.ghost{background:#FFFFFF;color:var(--primary);box-shadow:var(--shadow-sm);
-    border:1.5px solid var(--cream-2);margin-top:10px}
-
-  /* ---- sticky CTA ---- */
-  .cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:none;
-    padding:12px 16px calc(14px + env(safe-area-inset-bottom));
-    background:linear-gradient(180deg,rgba(251,228,210,0),var(--bg-bot) 40%)}
-  .cta-bar.visible{display:block}
-  .cta-bar .inner{max-width:440px;margin:0 auto}
-  .cta-bar a{text-decoration:none}
-
-  /* ---- result overlay ---- */
+  /* ---- overlays (result + redeem share the same chrome) ---- */
   .overlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
     padding:24px 20px;background:rgba(252,238,225,.9);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
   .overlay.visible{display:flex}
-  .ov-card{width:100%;max-width:400px;max-height:86vh;overflow-y:auto;
-    padding:26px 22px 22px;text-align:center}
+  .ov-card{position:relative;width:100%;max-width:400px;max-height:86vh;overflow-y:auto;
+    padding:28px 22px 24px;text-align:center}
+
+  /* ---- win celebration: a few small coins drift down, understated ---- */
+  .coin-burst{position:absolute;inset:0;pointer-events:none;z-index:5}
+  .coin-burst span{position:absolute;top:-16px;width:13px;height:13px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#FCE29A,#EFB42B 70%);
+    box-shadow:0 1px 2px rgba(180,120,20,.35);opacity:0;
+    animation:coinFall 1.5s ease-in forwards}
+  @keyframes coinFall{
+    0%{opacity:0;transform:translateY(0) rotate(0deg)}
+    10%{opacity:.9}
+    100%{opacity:0;transform:translateY(300px) rotate(240deg)}
+  }
   .ov-title{font-family:'Lora',serif;font-size:24px;font-weight:700;margin-top:4px}
   .ov-amount{display:none;align-items:center;justify-content:center;gap:10px;margin-top:10px}
   .ov-amount.visible{display:flex;animation:amt .55s cubic-bezier(.22,1.4,.36,1) both}
@@ -232,11 +181,27 @@
     background:linear-gradient(90deg,#D8940B,#F5B71D);-webkit-background-clip:text;background-clip:text;color:transparent}
   .ov-amount .unit{font-size:15px;font-weight:700;color:var(--ink-2);align-self:flex-end;padding-bottom:6px}
   .ov-note{font-size:12.5px;color:var(--ink-2);margin-top:10px;line-height:1.5}
-  .ov-div{height:1px;background:var(--line);margin:18px 6px}
-  .ov-kicker{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--primary)}
-  .ov-chlabel{font-family:'Lora',serif;font-size:17.5px;font-weight:600;margin-top:7px}
-  .ov-body{font-size:14px;line-height:1.62;color:#5A4A40;margin-top:9px;text-align:left}
+
+  /* ---- final-roll result screen: the spin result is REPLACED by the wallet
+     total (not appended below it) — a crossfade + lift swap between the two
+     blocks inside the same card. ---- */
+  .ov-swap{transition:opacity .3s ease, transform .3s ease}
+  .ov-swap.hide{opacity:0;transform:translateY(-8px);pointer-events:none}
+  .ov-wallet-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+  .ov-astro-note{font-size:13px;font-weight:600;color:var(--primary-deep);margin-top:14px}
+  .btn-gold{font-family:inherit;font-size:16px;font-weight:700;color:#fff;border:none;cursor:pointer;
+    background:linear-gradient(90deg,var(--cta-a),var(--cta-b));border-radius:18px;padding:14px;width:100%;
+    margin-top:16px;box-shadow:0 8px 20px rgba(244,87,34,.34);transition:transform .12s ease}
+  .btn-gold:active{transform:scale(.985)}
   .ov-card .grad-btn{margin-top:18px;padding:14px}
+  .ov-card .grad-btn.ghost{background:#FFFFFF;color:var(--primary);box-shadow:var(--shadow-sm);border:1.5px solid var(--cream-2)}
+
+  /* ---- redeem modal: crediting animation -> success ---- */
+  .redeem-spinner{display:none;width:56px;height:56px;margin:6px auto 4px;position:relative}
+  .redeem-spinner.visible{display:block}
+  .redeem-spinner svg{width:100%;height:100%;animation:spin 1s linear infinite}
+  .redeem-spinner circle{fill:none;stroke:var(--cream-2);stroke-width:5}
+  .redeem-spinner circle.arc{stroke:var(--primary);stroke-linecap:round;stroke-dasharray:80 200}
 
   /* ---- blocked / error ---- */
   .state-card{display:none;text-align:center;padding:40px 26px}
@@ -249,11 +214,21 @@
   body.state-error #softError{display:block}
   body.state-ready #surface{display:flex}
 
+  /* ---- footer back-to-home: only shown once today's 3 rolls are used up ---- */
+  .btn-home{display:none;font-family:inherit;font-size:14px;font-weight:700;color:#fff;border:none;cursor:pointer;
+    background:linear-gradient(90deg,var(--cta-a),var(--cta-b));border-radius:999px;padding:12px 26px;
+    margin:4px auto 0;box-shadow:0 6px 16px rgba(238,108,58,.35);transition:transform .12s ease}
+  .btn-home.visible{display:block}
+  .btn-home:active{transform:scale(.97)}
+
   button:focus-visible,a:focus-visible{outline:3px solid rgba(241,102,43,.45);outline-offset:2px}
   @media (prefers-reduced-motion: reduce){
-    .cube.idle,.halo,.ring,.pop,.consult-chat.visible,.tp i,.ov-amount.visible{animation:none !important}
+    .cube.idle,.halo,.ring,.pop,.ov-amount.visible,.redeem-spinner svg{animation:none !important}
     .cube{transition:none !important}
+    .ov-swap{transition:none !important}
   }
+  @keyframes pop{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .pop{animation:pop .5s ease both}
 </style>
 </head>
 <body>
@@ -273,13 +248,11 @@
     </header>
 
     <section class="bx state-card" id="blocked">
-      <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
       <div class="st" id="blockedTitle"></div>
       <div class="sb" id="blockedBody"></div>
     </section>
 
     <section class="bx state-card" id="softError">
-      <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
       <div class="st" id="errorTitle"></div>
       <div class="sb" id="errorBody"></div>
       <button class="btn-retry" id="retryBtn" type="button"></button>
@@ -288,7 +261,6 @@
     <div id="surface">
       <!-- B. total won -->
       <section class="bx ledger" aria-live="polite">
-        <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
         <svg class="coin" viewBox="0 0 36 36" aria-hidden="true">
           <circle cx="18" cy="18" r="16" fill="#EFB42B"/>
           <circle cx="18" cy="18" r="12.5" fill="#F8CE5A"/>
@@ -303,10 +275,7 @@
 
       <!-- C. the roll -->
       <section class="bx cast">
-        <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
         <div class="sec-title" id="castHeading"></div>
-        <!-- what you can win -->
-        <div class="prize-line" id="prizeLine"></div>
         <div class="stage" id="stage">
           <div class="halo"></div>
           <div class="ring" aria-hidden="true">
@@ -349,63 +318,69 @@
           <div class="db" id="doneBody"></div>
         </div>
       </section>
-
-      <!-- E. the reading — one merged card; the consult chat appears at Complete -->
-      <div class="sec-title" id="readingHeading"></div>
-      <section class="bx reading">
-        <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
-        <div id="insights"></div>
-        <div class="consult-chat" id="consultChat">
-          <div class="chat-row">
-            <div class="avatar" aria-hidden="true">
-              <img class="avatar-img" src="data:image/jpeg;base64,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" alt="Acharya Durgeshnand" />
-              <i></i>
-            </div>
-            <div class="bubble">
-              <p id="bubbleLine"></p>
-              <div class="tp" aria-hidden="true"><i></i><i></i><i></i></div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
+
+    <button class="btn-home" id="homeBtn" type="button">Back to Home</button>
   </main>
+</div>
 
-  <!-- sticky consult CTA (Complete state only) -->
-  <div class="cta-bar" id="ctaBar">
-    <div class="inner">
-      <a class="grad-btn" id="consultBtn" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="21" height="21" aria-hidden="true">
-          <path d="M21 12a8 8 0 0 1-8 8H5l-2 2V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8z" stroke-linejoin="round"/>
+<!-- post-roll result screen: on the final roll of the day, the spin result
+     (ovResult) is replaced by the wallet total (ovWallet) via a crossfade,
+     not appended below it. -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+  <div class="bx ov-card pop">
+    <div class="coin-burst" id="coinBurst" aria-hidden="true"></div>
+    <div class="ov-swap" id="ovResult">
+      <div class="ov-title serif" id="ovTitle"></div>
+      <div class="ov-amount" id="ovAmount">
+        <svg class="coin" viewBox="0 0 36 36" aria-hidden="true">
+          <circle cx="18" cy="18" r="16" fill="#EFB42B"/>
+          <circle cx="18" cy="18" r="12.5" fill="#F8CE5A"/>
+          <path d="M18 9c.8 3.6 2.2 5.4 5 7.5-2.8 2.1-4.2 3.9-5 7.5-.8-3.6-2.2-5.4-5-7.5 2.8-2.1 4.2-3.9 5-7.5z" fill="#B97E10"/>
         </svg>
-        <span id="consultLabel"></span>
-      </a>
+        <span class="amt" id="ovAmt"></span><span class="unit" id="ovUnit"></span>
+      </div>
+      <div class="ov-note" id="ovNote"></div>
     </div>
+
+    <div class="ov-swap hide" id="ovWallet" style="display:none">
+      <div class="ov-wallet-label" id="ovWalletLabel"></div>
+      <div class="ov-amount visible">
+        <svg class="coin" viewBox="0 0 36 36" aria-hidden="true">
+          <circle cx="18" cy="18" r="16" fill="#EFB42B"/>
+          <circle cx="18" cy="18" r="12.5" fill="#F8CE5A"/>
+          <path d="M18 9c.8 3.6 2.2 5.4 5 7.5-2.8 2.1-4.2 3.9-5 7.5-.8-3.6-2.2-5.4-5-7.5 2.8-2.1 4.2-3.9 5-7.5z" fill="#B97E10"/>
+        </svg>
+        <span class="amt" id="ovWalletAmt"></span><span class="unit" id="ovWalletUnit"></span>
+      </div>
+      <button class="btn-gold" id="ovRedeem" type="button"></button>
+      <div class="ov-astro-note" id="ovAstroNote"></div>
+    </div>
+
+    <button class="grad-btn" id="ovClose" type="button"></button>
   </div>
 </div>
 
-<!-- post-roll result screen -->
-<div class="overlay" id="overlay" role="dialog" aria-modal="true">
+<!-- redeem flow: crediting animation -> redeemed amount -->
+<div class="overlay" id="redeemModal" role="dialog" aria-modal="true">
   <div class="bx ov-card pop">
-    <span class="cb tl"></span><span class="cb tr"></span><span class="cb bl"></span><span class="cb br"></span>
-    <!-- no dice here (the landed cube already showed the face) — the won
-         amount appears exactly once, on this row -->
-    <div class="ov-title serif" id="ovTitle"></div>
-    <div class="ov-amount" id="ovAmount">
+    <div class="redeem-spinner" id="redeemSpinner">
+      <svg viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="24"/>
+        <circle class="arc" cx="28" cy="28" r="24"/>
+      </svg>
+    </div>
+    <div class="ov-title serif" id="redeemTitle"></div>
+    <div class="ov-amount" id="redeemAmount">
       <svg class="coin" viewBox="0 0 36 36" aria-hidden="true">
         <circle cx="18" cy="18" r="16" fill="#EFB42B"/>
         <circle cx="18" cy="18" r="12.5" fill="#F8CE5A"/>
         <path d="M18 9c.8 3.6 2.2 5.4 5 7.5-2.8 2.1-4.2 3.9-5 7.5-.8-3.6-2.2-5.4-5-7.5 2.8-2.1 4.2-3.9 5-7.5z" fill="#B97E10"/>
       </svg>
-      <span class="amt" id="ovAmt"></span><span class="unit" id="ovUnit"></span>
+      <span class="amt" id="redeemAmt"></span><span class="unit" id="redeemUnit"></span>
     </div>
-    <div class="ov-note" id="ovNote"></div>
-    <div class="ov-div"></div>
-    <div class="ov-kicker" id="ovKicker"></div>
-    <div class="ov-chlabel" id="ovChLabel"></div>
-    <p class="ov-body" id="ovBody"></p>
-    <button class="btn-gold ov-redeem" id="ovRedeem" type="button"></button>
-    <button class="grad-btn" id="ovClose" type="button"></button>
+    <div class="ov-note" id="redeemNote"></div>
+    <button class="grad-btn" id="redeemClose" type="button" style="display:none"></button>
   </div>
 </div>
 
@@ -416,7 +391,6 @@
   const params = new URLSearchParams(location.search);
   const userId = params.get('user_id');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const sleep = (ms) => new Promise((r) => setTimeout(r, reducedMotion ? 0 : ms));
   const DAY_TZ = 'Asia/Kolkata'; // must match the server's product-day boundary
 
   let session = null;
@@ -570,40 +544,20 @@
     $('castHeading').textContent = copy.cast.heading || '';
     $('ledgerTitle').textContent = copy.ledger.title || '';
     $('ledgerUnit').textContent = copy.ledger.unit || '';
-    $('readingHeading').textContent = copy.chapters.heading || '';
     $('doneTitle').textContent = copy.cast.doneTitle || '';
     $('doneBody').textContent = copy.cast.doneBody || '';
-    $('consultLabel').textContent = copy.consult.cta || '';
   }
 
-  const COIN_SVG = '<svg viewBox="0 0 36 36" aria-hidden="true">' +
-    '<circle cx="18" cy="18" r="16" fill="#EFB42B"/><circle cx="18" cy="18" r="12.5" fill="#F8CE5A"/>' +
-    '<path d="M18 9c.8 3.6 2.2 5.4 5 7.5-2.8 2.1-4.2 3.9-5 7.5-.8-3.6-2.2-5.4-5-7.5 2.8-2.1 4.2-3.9 5-7.5z" fill="#B97E10"/></svg>';
-
-  function render(justRevealedIndex) {
+  function render() {
     const s = session;
     const copy = s.copy;
     renderChrome(copy);
 
-    // B. total won
-    $('ledgerAmount').textContent = s.earned;
+    // B. total won — persists across days until redeemed
+    $('ledgerAmount').textContent = s.walletBalance;
     const claimBtn = $('claimBtn');
-    if (s.claimed) {
-      claimBtn.textContent = copy.ledger.claimedLabel || '';
-      claimBtn.disabled = true;
-      claimBtn.classList.add('claimed');
-    } else {
-      claimBtn.textContent = copy.ledger.claimCta || '';
-      claimBtn.disabled = !s.claimable || busy;
-      claimBtn.classList.remove('claimed');
-    }
-
-    // C. prize pill — what you can win
-    const prizeLine = $('prizeLine');
-    prizeLine.innerHTML = COIN_SVG;
-    const prizeText = document.createElement('span');
-    prizeText.textContent = template(copy.cast.prizeLine, { max: s.rewardCap });
-    prizeLine.appendChild(prizeText);
+    claimBtn.textContent = copy.ledger.claimCta || '';
+    claimBtn.disabled = !s.claimable || busy;
 
     // C + D. roll button, progress or reset timer
     const rollBtn = $('rollBtn');
@@ -627,43 +581,8 @@
       $('progressText').textContent = template(copy.progress.leftTemplate, { n: s.castsLeft, total: s.castsPerDay });
     }
 
-    // E. reading — one merged card, three insight blocks
-    const wrap = $('insights');
-    wrap.innerHTML = '';
-    for (const ch of s.chapters) {
-      const block = document.createElement('div');
-      block.className = 'insight ' + (ch.state === 'unlocked' ? 'unlocked' : 'locked') +
-        (ch.index === justRevealedIndex ? ' pop' : '');
-      const label = document.createElement('div');
-      label.className = 'in-label';
-      if (ch.state !== 'unlocked') {
-        label.insertAdjacentHTML('beforeend',
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">' +
-          '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>');
-      }
-      const labelText = document.createElement('span');
-      labelText.textContent = (ch.index + 1) + '. ' + ch.label;
-      label.appendChild(labelText);
-      block.appendChild(label);
-      const body = document.createElement('p');
-      body.className = 'in-body';
-      body.textContent = ch.body || '';
-      block.appendChild(body);
-      block.insertAdjacentHTML('beforeend', '<div class="in-skel" aria-hidden="true"><i></i><i></i><i></i></div>');
-      wrap.appendChild(block);
-    }
-
-    // Consult chat + sticky CTA — only at Complete. The bubble is a generic
-    // astrologer hook from config; no name, price, or rating anywhere.
-    if (s.nudge) {
-      $('consultChat').classList.add('visible');
-      $('bubbleLine').textContent = copy.consult.bubbleLine || '';
-      $('ctaBar').classList.add('visible');
-      $('consultBtn').href = s.nudge.consultUrl || '#';
-    } else {
-      $('consultChat').classList.remove('visible');
-      $('ctaBar').classList.remove('visible');
-    }
+    // Back to Home — only once today's 3 rolls are used up.
+    $('homeBtn').classList.toggle('visible', s.complete);
 
     setBodyState('ready');
   }
@@ -681,36 +600,79 @@
     setBodyState('error');
   }
 
+  // ------- win celebration: a handful of small coins drift down inside the
+  // result card. Understated on purpose — a beat of delight, not confetti. -------
+  function spawnCoinBurst() {
+    if (reducedMotion) return;
+    const el = $('coinBurst');
+    el.innerHTML = '';
+    const count = 7;
+    for (let i = 0; i < count; i++) {
+      const c = document.createElement('span');
+      c.style.left = (8 + Math.random() * 84) + '%';
+      c.style.animationDelay = (Math.random() * 0.35) + 's';
+      c.style.animationDuration = (1.2 + Math.random() * 0.5) + 's';
+      el.appendChild(c);
+    }
+    setTimeout(() => { el.innerHTML = ''; }, 2200);
+  }
+
   // ------- result screen -------
+  // Every non-final roll closes with "Roll again" and rolls immediately.
+  // On the final roll of the day, once the win/no-win beat has landed, the
+  // spin result is REPLACED (crossfade, not appended below) by the wallet
+  // total with a Redeem Now CTA — unless the balance is 0, in which case
+  // the user just continues.
   function showResult(result) {
     const copy = session.copy;
     const rc = copy.result || {};
-    const chapter = result.session.chapters[result.chapterIndex] || {};
     const win = result.reward > 0;
-    // Every non-final roll closes with "Roll again" and rolls immediately.
-    overlayTryAgain = !result.session.complete;
+    const s = result.session;
+    overlayTryAgain = !s.complete;
+
+    const ovResult = $('ovResult');
+    const ovWallet = $('ovWallet');
+    ovResult.classList.remove('hide');
+    ovResult.style.display = '';
+    ovWallet.classList.add('hide');
+    ovWallet.style.display = 'none';
+
     $('ovTitle').textContent = win ? (rc.winTitle || '') : (rc.noWinTitle || '');
     $('ovAmount').classList.toggle('visible', win);
     $('ovAmt').textContent = String(result.reward);
     $('ovUnit').textContent = copy.ledger.unit || '';
     $('ovNote').textContent = win ? '' : (rc.noWinNote || '');
-    $('ovKicker').textContent = rc.insightKicker || '';
-    $('ovChLabel').textContent = chapter.label || '';
-    $('ovBody').textContent = chapter.body || '';
-    // Final screen: redeem + continue side by side (the redeem fires the
-    // same protected server claim flow as the ledger button).
-    const showRedeem = result.session.complete && result.session.claimable;
-    const ovRedeem = $('ovRedeem');
-    ovRedeem.classList.toggle('visible', showRedeem);
-    ovRedeem.classList.remove('claimed');
-    ovRedeem.disabled = false;
-    ovRedeem.textContent = rc.redeemCta || '';
-    $('ovClose').classList.toggle('ghost', showRedeem);
-    $('ovClose').textContent = overlayTryAgain ? (rc.rollAgainCta || rc.continueCta || '') : (rc.continueCta || '');
+
+    const showWallet = s.complete && s.walletBalance > 0;
+    const ovClose = $('ovClose');
+    // Once the wallet total is showing, Redeem Now is the only way forward —
+    // no Continue/dismiss button (backdrop tap still closes it).
+    ovClose.style.display = showWallet ? 'none' : '';
+    ovClose.textContent = overlayTryAgain ? (rc.rollAgainCta || rc.continueCta || '') : (rc.continueCta || '');
+
+    if (win) spawnCoinBurst();
+
+    if (showWallet) {
+      setTimeout(() => {
+        ovResult.classList.add('hide'); // fade + lift the result out
+        setTimeout(() => {
+          ovResult.style.display = 'none';
+          $('ovWalletLabel').textContent = rc.walletTitle || '';
+          $('ovWalletAmt').textContent = String(s.walletBalance);
+          $('ovWalletUnit').textContent = copy.ledger.unit || '';
+          $('ovRedeem').textContent = rc.redeemNowCta || '';
+          $('ovAstroNote').textContent = rc.talkAstrologerNote || '';
+          ovWallet.style.display = 'block';
+          void ovWallet.offsetWidth; // force reflow so the next class change transitions
+          ovWallet.classList.remove('hide'); // fade + drop the wallet total in
+        }, reducedMotion ? 0 : 300);
+      }, reducedMotion ? 0 : 1500);
+    }
+
     const overlay = $('overlay');
     overlay.classList.add('visible');
     document.body.style.overflow = 'hidden';
-    $('ovClose').focus({ preventScroll: true });
+    if (!showWallet) ovClose.focus({ preventScroll: true });
   }
   function closeResult(viaButton) {
     const overlay = $('overlay');
@@ -724,9 +686,59 @@
     }
     if (viaButton && session && session.complete) track('tap_final_continue', 'result_overlay', {});
     overlayTryAgain = false;
-    const idx = Number(overlay.dataset.chapterIndex || -1);
-    const revealed = $('insights').children[idx];
-    if (revealed) revealed.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'center' });
+  }
+
+  // ------- redeem modal: shared crediting -> success flow, used from both
+  // the ledger's Redeem Coins button and the result overlay's Redeem Now. -------
+  async function runRedeem(source) {
+    if (busy || !session || !session.claimable) return;
+    track('tap_redeem_coins', source, { amount: session.walletBalance });
+    busy = true;
+    const copy = session.copy.redeemModal || {};
+    const modal = $('redeemModal');
+    $('redeemSpinner').classList.add('visible');
+    $('redeemTitle').textContent = copy.creditingTitle || '';
+    $('redeemAmount').classList.remove('visible');
+    $('redeemNote').textContent = '';
+    $('redeemClose').style.display = 'none';
+    $('overlay').classList.remove('visible');
+    modal.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+
+    const started = Date.now();
+    try {
+      const result = await api('/api/claim', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      // Keep the crediting beat on screen for a minimum, perceptible stretch
+      // even when the server answers instantly — the "crediting" state
+      // should always feel like something happened.
+      const elapsed = Date.now() - started;
+      if (!reducedMotion && elapsed < 900) await new Promise((r) => setTimeout(r, 900 - elapsed));
+
+      session = result.session;
+      $('redeemSpinner').classList.remove('visible');
+      $('redeemTitle').textContent = copy.doneTitle || '';
+      $('redeemAmt').textContent = String(result.claimedAmount);
+      $('redeemUnit').textContent = session.copy.ledger.unit || '';
+      $('redeemAmount').classList.add('visible');
+      $('redeemNote').textContent = copy.doneNote || '';
+      $('redeemClose').textContent = copy.closeCta || '';
+      $('redeemClose').style.display = '';
+      render();
+    } catch (err) {
+      modal.classList.remove('visible');
+      document.body.style.overflow = '';
+      if (err.status === 409) await load();
+      else showError(err.data && err.data.copy);
+    }
+    busy = false;
+  }
+  function closeRedeemModal() {
+    $('redeemModal').classList.remove('visible');
+    document.body.style.overflow = '';
   }
 
   // ------- actions -------
@@ -756,8 +768,7 @@
       stage.classList.remove('rolling');
       session = result.session;
       busy = false;
-      render(result.chapterIndex); // the insight reflects on the page behind the overlay
-      $('overlay').dataset.chapterIndex = String(result.chapterIndex);
+      render();
       showResult(result);
     } catch (err) {
       stage.classList.remove('rolling');
@@ -765,50 +776,6 @@
       if (err.status === 409) { await load(); return; } // out of sync — refresh truth
       showError(err.data && err.data.copy);
     }
-  }
-
-  // Redeem from the final result screen — same server flow as the ledger
-  // Claim button; the server makes repeats credit-safe, the UI just reflects.
-  async function doOverlayRedeem() {
-    if (!session || !session.claimable) return;
-    track('tap_redeem_coins', 'result_overlay', { amount: session.earned });
-    const btn = $('ovRedeem');
-    btn.disabled = true;
-    try {
-      const result = await api('/api/claim', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ user_id: userId }),
-      });
-      session = result.session;
-      render(); // ledger flips to Claimed behind the overlay
-      btn.textContent = (session.copy.result && session.copy.result.redeemedLabel) || '';
-      btn.classList.add('claimed');
-    } catch (err) {
-      btn.disabled = false;
-      if (err.status === 409) await load();
-      else showError(err.data && err.data.copy);
-    }
-  }
-
-  async function doClaim() {
-    if (busy || !session || !session.claimable) return;
-    track('tap_redeem_coins', 'ledger', { amount: session.earned });
-    busy = true;
-    render();
-    try {
-      const result = await api('/api/claim', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ user_id: userId }),
-      });
-      session = result.session;
-    } catch (err) {
-      if (err.status !== 409) showError(err.data && err.data.copy);
-      else await load();
-    }
-    busy = false;
-    if (session) render();
   }
 
   // ------- boot -------
@@ -821,7 +788,7 @@
       render();
       if (!load.viewTracked) {
         load.viewTracked = true; // once per page open, not per retry/refresh
-        track('viewed_daily_dice', 'page_load', { rolls_used: session.castsUsed, earned: session.earned });
+        track('viewed_daily_dice', 'page_load', { rolls_used: session.castsUsed, wallet_balance: session.walletBalance });
       }
     } catch (err) {
       if (err.status === 401 || err.status === 400) showBlocked(err.data && err.data.copy);
@@ -833,24 +800,24 @@
     track('tap_back', 'header', { rolls_used: session ? session.castsUsed : null });
     goBack();
   });
+  $('homeBtn').addEventListener('click', () => {
+    // Same goBack() bridge/deeplink as the header back arrow — only the
+    // event name + source differ, so the two taps are distinguishable in
+    // analytics without diverging in behavior.
+    track('tap_back_home', 'footer', { rolls_used: session ? session.castsUsed : null });
+    goBack();
+  });
   $('rollBtn').addEventListener('click', () => {
     if (!busy && session && !session.complete) track('tap_dice_roll', 'cast_card', { roll_number: session.castsUsed + 1 });
     doRoll();
   });
-  $('claimBtn').addEventListener('click', doClaim);
+  $('claimBtn').addEventListener('click', () => runRedeem('ledger'));
   $('retryBtn').addEventListener('click', load);
-  $('ovRedeem').addEventListener('click', doOverlayRedeem);
+  $('ovRedeem').addEventListener('click', () => runRedeem('result_overlay'));
   $('ovClose').addEventListener('click', () => closeResult(true));
   $('overlay').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeResult(false); });
-  // CTA goes through the same GO_BACK bridge as the back arrow: the deeplink
-  // would PUSH a new Home on top of this webview (phone-back lands here
-  // again); posting GO_BACK pops this screen instead. sendBeacon survives
-  // either navigation.
-  $('consultBtn').addEventListener('click', (e) => {
-    e.preventDefault();
-    track('tap_talk_to_astro', 'sticky_bar', { rolls_used: session ? session.castsUsed : null });
-    goBack();
-  });
+  $('redeemClose').addEventListener('click', closeRedeemModal);
+  $('redeemModal').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeRedeemModal(); });
 
   load();
 })();

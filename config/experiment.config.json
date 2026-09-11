@@ -1,191 +1,40 @@
 {
-  "_note": "All user-visible content lives here. Edit freely and restart; logic never depends on the wording. Chapter count, cap and split are the A/B knobs.",
-  "rewardCapPerDay": 100,
+  "_note": "All user-visible content lives here. Edit freely and restart; logic never depends on the wording. castsPerDay, rewardCapPerDay and rewardSchedule are the A/B knobs.",
+  "castsPerDay": 3,
+  "rewardCapPerDay": 20,
   "lifetimeReward": {
-    "_note": "Experiment runs ~2 weeks; a user's total winnings across ALL days stay under totalBudget. firstDayPlan fixes the user's FIRST-ever day per roll (10 on the very first roll, nothing after). From their second day onward a day pays with laterWinChance, amount drawn from laterGrants (earlyDaySchedule is empty = no further warm-up days). Any payout is at least minGrant; 0-coin days are expected.",
+    "_note": "Experiment runs ~2 weeks. rewardSchedule[daysPlayed] is the fixed [roll1, roll2, roll3] payout for that day index (0 = user's very first day) — every user wins something on each of their first 7 days, no randomness. Days beyond the schedule pay nothing (totalBudget is already fully spent by day 7).",
     "totalBudget": 90,
-    "minGrant": 10,
-    "earlyDaySchedule": [],
-    "laterWinChance": 0.45,
-    "laterGrants": [
-      10,
-      20,
-      30
-    ],
-    "firstDayPlan": [
-      10,
-      0,
-      0
+    "rewardSchedule": [
+      [5, 10, 5],
+      [5, 5, 5],
+      [0, 10, 5],
+      [5, 0, 5],
+      [0, 5, 5],
+      [5, 5, 0],
+      [5, 0, 5]
     ]
   },
   "coinCredit": {
-    "_note": "Fields sent to the internal Coin API (server-side only). {day} in the description is replaced with the product day.",
+    "_note": "Fields sent to the internal Coin API (server-side only). {day} in the description is replaced with the product day the redemption happened on.",
     "purpose": "reward",
     "source": "daily_cast",
     "descriptionTemplate": "Retention experiment"
-  },
-  "chapters": [
-    {
-      "key": "energy",
-      "label": "Your energy today",
-      "openLoop": false,
-      "sampleVariants": [
-        {
-          "body": "Chandra is steady for you today. Work started before noon will move fast — one old task finally clears."
-        },
-        {
-          "body": "Surya gives you extra strength this morning. A job you kept pushing away will feel easy if you start it today."
-        },
-        {
-          "body": "Your mind is calm and sharp today. People will listen when you speak — a good day to say what you have been holding back."
-        },
-        {
-          "body": "Energy rises after sunrise and stays with you till evening. Finish important work early; the evening is for family."
-        },
-        {
-          "body": "Chandra favours quiet effort today. Avoid noise and crowds — one hour of focused work will give the result of three."
-        },
-        {
-          "body": "Today your patience is your power. Something that tested you all week will finally settle without a fight."
-        },
-        {
-          "body": "A light, lucky day. Small tasks clear fast, and someone senior notices your effort — accept the praise, don't brush it off."
-        },
-        {
-          "body": "Your body may feel slow but your stars are active. Push through the first hour; the rest of the day rewards you."
-        }
-      ]
-    },
-    {
-      "key": "watch",
-      "label": "What to watch for",
-      "openLoop": false,
-      "sampleVariants": [
-        {
-          "body": "Budh is slow this week — avoid new money decisions for now. A talk at home tonight will go your way."
-        },
-        {
-          "body": "Watch your words after sunset — one sharp sentence can undo a week of goodwill. Stay soft, especially with elders."
-        },
-        {
-          "body": "Someone may ask you to lend money today. Help with care, but do not empty your own pocket — Shukra warns against it."
-        },
-        {
-          "body": "An old friend or contact may return with an offer. Listen fully before saying yes — there is one detail they will not mention first."
-        },
-        {
-          "body": "Do not sign new papers today if you can wait. By tomorrow evening the confusion around them clears on its own."
-        },
-        {
-          "body": "Small delays in travel or messages are likely before noon. Do not read meaning into silence — the reply comes late, not never."
-        },
-        {
-          "body": "Guard your health at midday — eat on time and avoid outside food today. A small care now saves a big trouble later."
-        },
-        {
-          "body": "Someone near you is testing your patience on purpose. Do not give them the reaction they want — your calm is your win today."
-        }
-      ]
-    },
-    {
-      "key": "question",
-      "label": "The question your roll raises",
-      "openLoop": true,
-      "sampleVariants": [
-        {
-          "body": "Your stars show a delay ending within 15 days. But the exact day — and what to do when it comes — the dice cannot tell.",
-          "openQuestion": "When exactly does the delay end, and what should be done on that day?"
-        },
-        {
-          "body": "There is a decision you keep postponing. The stars say the window to act is close — but how close, and which choice is right, needs your full kundli.",
-          "openQuestion": "Which choice is right, and when does the window open?"
-        },
-        {
-          "body": "Money is moving toward you from a direction you have stopped watching. Which direction it is — the roll cannot say, only a full reading can.",
-          "openQuestion": "From which direction is the money coming?"
-        },
-        {
-          "body": "A person in your circle thinks of you more than they show. The dice see it clearly — but who it is, they will not reveal.",
-          "openQuestion": "Who in the circle is thinking of the user?"
-        },
-        {
-          "body": "One door is closing so another can open. The closing you can feel already — the opening has a date, and the dice keep it hidden.",
-          "openQuestion": "What is the date and nature of the opening door?"
-        },
-        {
-          "body": "Your name will come up in a conversation you are not part of, and it matters. What is said depends on one thing you do this week — which thing, the roll does not show.",
-          "openQuestion": "Which action this week decides how the conversation goes?"
-        },
-        {
-          "body": "The unease you feel is not about what you think it is about. Its real root shows in your birth chart — the dice can only point, not explain.",
-          "openQuestion": "What is the real root of the unease in the birth chart?"
-        },
-        {
-          "body": "Something you lost — a chance, a bond, an amount — has a way back. The path exists, but it has a condition the dice cannot read.",
-          "openQuestion": "What is the condition for getting back what was lost?"
-        }
-      ]
-    }
-  ],
-  "anchorsByWeekday": {
-    "Monday": {
-      "label": "Somvar · day of Chandra",
-      "detail": "The Moon rules today — a day for calm starts and steady minds."
-    },
-    "Tuesday": {
-      "label": "Mangalvar · day of Mangal",
-      "detail": "Mars rules today — courage pays, but so does counting to ten."
-    },
-    "Wednesday": {
-      "label": "Budhvar · day of Budh",
-      "detail": "Mercury rules today — good for talks, deals and clear letters."
-    },
-    "Thursday": {
-      "label": "Guruvar · day of Brihaspati",
-      "detail": "Jupiter rules today — a day when good advice finds you."
-    },
-    "Friday": {
-      "label": "Shukravar · day of Shukra",
-      "detail": "Venus rules today — ease, beauty and relationships come forward."
-    },
-    "Saturday": {
-      "label": "Shanivar · day of Shani",
-      "detail": "Saturn rules today — slow, honest effort is quietly rewarded."
-    },
-    "Sunday": {
-      "label": "Ravivar · day of Surya",
-      "detail": "The Sun rules today — stand tall, your effort gets seen."
-    }
-  },
-  "astrologer": {
-    "name": "Acharya Durgeshnand",
-    "skill": "Vedic Astrology",
-    "language": "Hindi",
-    "rating": "4.8",
-    "experienceYears": 14,
-    "pricePerMin": 20,
-    "availability": "online",
-    "avatarInitial": "A"
   },
   "nav": {
     "_note": "Webview keeps no browser history. The back arrow posts GO_BACK to the RN shell when available; otherwise it fires this deeplink (same one the Bhagya surfaces use).",
     "backDeeplink": "astrolokal://BottomTabs?screen=Home"
   },
-  "consultTarget": {
-    "deeplink": "astrolokal://BottomTabs?screen=Home",
-    "_note": "CTA destination. Context (day, rolls, open-question item id) is appended as query params server-side; swap in the real deeplink/URL without touching logic."
-  },
   "copy": {
-    "_note": "Keep every label in simple, everyday words (tier-2/3 audience). Astro flavour lives in the reading content, never in buttons or labels.",
+    "_note": "Keep every label in simple, everyday words (tier-2/3 audience).",
     "ledger": {
-      "title": "TOTAL WON",
+      "title": "Coins to Redeem",
       "unit": "coins",
-      "claimCta": "Claim",
-      "claimedLabel": "Claimed ✓"
+      "claimCta": "Redeem",
+      "claimedLabel": "Redeemed ✓"
     },
     "cast": {
       "heading": "🎲 Roll & Win",
-      "prizeLine": "Win up to {max} coins every day",
       "rollCta": "Roll the dice",
       "rollingLabel": "Rolling…",
       "doneTitle": "Done for today!",
@@ -195,23 +44,21 @@
       "winTitle": "Hooray, you won!",
       "noWinTitle": "Oh no, no coins this time",
       "noWinNote": "Better luck on your next roll!",
-      "insightKicker": "What your roll says",
       "rollAgainCta": "Roll again",
-      "redeemCta": "Redeem coins",
-      "redeemedLabel": "Redeemed ✓",
-      "continueCta": "Continue"
+      "continueCta": "Continue",
+      "walletTitle": "Total in your wallet",
+      "redeemNowCta": "Redeem Now",
+      "talkAstrologerNote": "Use them to talk with an astrologer."
     },
     "progress": {
       "leftTemplate": "{n} of {total} rolls left today",
       "nextRollTemplate": "Next free roll in {time}"
     },
-    "chapters": {
-      "heading": "📖 Today's reading",
-      "lockedHint": "Roll the dice to unlock"
-    },
-    "consult": {
-      "bubbleLine": "These 3 signs are telling you something. Let me explain what.",
-      "cta": "Talk to an Astrologer"
+    "redeemModal": {
+      "creditingTitle": "Crediting coins to your wallet…",
+      "doneTitle": "Coins redeemed!",
+      "doneNote": "Coins will reflect within 5 min.",
+      "closeCta": "Done"
     },
     "blocked": {
       "title": "Login required",
