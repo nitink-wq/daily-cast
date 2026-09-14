@@ -727,7 +727,9 @@
       $('redeemNote').textContent = copy.doneNote || '';
       $('redeemClose').textContent = copy.closeCta || '';
       $('redeemClose').style.display = '';
+      busy = false;
       render();
+      return;
     } catch (err) {
       modal.classList.remove('visible');
       document.body.style.overflow = '';
