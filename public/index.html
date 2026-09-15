@@ -211,8 +211,10 @@
     background:var(--surface);border:1.5px solid var(--primary);border-radius:999px;padding:10px 26px;margin-top:16px}
   #surface{display:none;flex-direction:column;gap:18px}
   body.state-blocked #blocked{display:block}
+  body.state-locked #locked{display:block}
   body.state-error #softError{display:block}
   body.state-ready #surface{display:flex}
+  .cast-note{font-size:12.5px;color:var(--ink-2);text-align:center;margin-top:10px;line-height:1.5}
 
   /* ---- footer back-to-home: only shown once today's 3 rolls are used up ---- */
   .btn-home{display:none;font-family:inherit;font-size:14px;font-weight:700;color:#fff;border:none;cursor:pointer;
@@ -250,6 +252,11 @@
     <section class="bx state-card" id="blocked">
       <div class="st" id="blockedTitle"></div>
       <div class="sb" id="blockedBody"></div>
+    </section>
+
+    <section class="bx state-card" id="locked">
+      <div class="st" id="lockedTitle"></div>
+      <div class="sb" id="lockedBody"></div>
     </section>
 
     <section class="bx state-card" id="softError">
@@ -317,6 +324,7 @@
           <div class="dt" id="doneTitle"></div>
           <div class="db" id="doneBody"></div>
         </div>
+        <div class="cast-note" id="bookAgainNote" style="display:none"></div>
       </section>
     </div>
 
@@ -581,6 +589,11 @@
       $('progressText').textContent = template(copy.progress.leftTemplate, { n: s.castsLeft, total: s.castsPerDay });
     }
 
+    // Reminder to book again tomorrow — only once they've actually rolled today.
+    const bookAgainNote = $('bookAgainNote');
+    bookAgainNote.textContent = copy.cast.bookTomorrowNote || '';
+    bookAgainNote.style.display = s.castsUsed > 0 ? '' : 'none';
+
     // Back to Home — only once today's 3 rolls are used up.
     $('homeBtn').classList.toggle('visible', s.complete);
 
@@ -592,6 +605,11 @@
     $('blockedTitle').textContent = (copy && copy.title) || 'Login required';
     $('blockedBody').textContent = (copy && copy.body) || 'Please login from the AstroLokal app to access this page.';
     setBodyState('blocked');
+  }
+  function showLocked(copy) {
+    $('lockedTitle').textContent = (copy && copy.title) || 'Dice locked';
+    $('lockedBody').textContent = (copy && copy.body) || 'Complete one booking today to unlock the dice.';
+    setBodyState('locked');
   }
   function showError(copy) {
     $('errorTitle').textContent = (copy && copy.title) || 'Something went wrong';
@@ -775,7 +793,7 @@
     } catch (err) {
       stage.classList.remove('rolling');
       busy = false;
-      if (err.status === 409) { await load(); return; } // out of sync — refresh truth
+      if (err.status === 409 || err.status === 403) { await load(); return; } // out of sync — refresh truth
       showError(err.data && err.data.copy);
     }
   }
@@ -787,6 +805,7 @@
     if (!userId) { showBlocked(null); return; }
     try {
       session = await api('/api/session?user_id=' + encodeURIComponent(userId || ''));
+      if (!session.bookingUnlocked) { showLocked(session.copy.locked); return; }
       render();
       if (!load.viewTracked) {
         load.viewTracked = true; // once per page open, not per retry/refresh

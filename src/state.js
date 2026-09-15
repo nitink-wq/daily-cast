@@ -68,6 +68,18 @@ async function fetchWalletBalance(executor, userId) {
   return rows[0].balance;
 }
 
+// The dice is only unlocked for users who show up in today's Redash booking
+// sync (src/redash-sync.js), refreshed every 5 min. Presence, not content,
+// is what matters — this is a pure existence check against our own mirror
+// table, never Redash directly.
+async function fetchBookingUnlocked(executor, userId) {
+  const { rows } = await executor.query(
+    'SELECT 1 FROM redash_wallet_sync WHERE user_id = $1',
+    [userId],
+  );
+  return rows.length > 0;
+}
+
 // ---------------------------------------------------------------------------
 // Daily state row
 async function lockDailyState(client, userId, day, cfg) {
@@ -98,7 +110,7 @@ async function readDailyState(executor, userId, day) {
 
 // ---------------------------------------------------------------------------
 // Session payload — the only shape the client ever renders.
-function buildSessionPayload({ cfg, day, state, walletBalance }) {
+function buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked }) {
   const castsUsed = state ? state.casts_used : 0;
   const complete = castsUsed >= cfg.castsPerDay;
 
@@ -111,6 +123,7 @@ function buildSessionPayload({ cfg, day, state, walletBalance }) {
     rewardCap: cfg.rewardCapPerDay,
     walletBalance,
     claimable: walletBalance > 0,
+    bookingUnlocked,
     nav: cfg.nav || null,
     copy: cfg.copy,
   };
@@ -122,17 +135,23 @@ function buildSessionPayload({ cfg, day, state, walletBalance }) {
 export async function getSession(userId) {
   const cfg = loadConfig();
   const day = todayKey();
-  const [state, walletBalance] = await Promise.all([
+  const [state, walletBalance, bookingUnlocked] = await Promise.all([
     readDailyState({ query }, userId, day),
     fetchWalletBalance({ query }, userId),
+    fetchBookingUnlocked({ query }, userId),
   ]);
-  return buildSessionPayload({ cfg, day, state, walletBalance });
+  return buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked });
 }
 
 export async function cast(userId) {
   const cfg = loadConfig();
   const day = todayKey();
   return withTx(async (client) => {
+    const bookingUnlocked = await fetchBookingUnlocked(client, userId);
+    if (!bookingUnlocked) {
+      throw new StateError('BOOKING_REQUIRED', 'booking required to unlock dice');
+    }
+
     const state = await lockDailyState(client, userId, day, cfg);
     if (state.casts_used >= cfg.castsPerDay) {
       throw new StateError('EXHAUSTED', 'no casts left today');
@@ -158,7 +177,7 @@ export async function cast(userId) {
     }
 
     const walletBalance = await fetchWalletBalance(client, userId);
-    const payload = buildSessionPayload({ cfg, day, state: updated.rows[0], walletBalance });
+    const payload = buildSessionPayload({ cfg, day, state: updated.rows[0], walletBalance, bookingUnlocked });
     return { reward, session: payload };
   });
 }
@@ -215,10 +234,13 @@ export async function claim(userId) {
   // insert inside fireCoinCredit is the gate.
   await fireCoinCredit({ userId, day, amount: marked.amount, idempotencyKey: marked.idempotencyKey });
 
-  const walletBalance = await fetchWalletBalance({ query }, userId);
-  const state = await readDailyState({ query }, userId, day);
+  const [walletBalance, state, bookingUnlocked] = await Promise.all([
+    fetchWalletBalance({ query }, userId),
+    readDailyState({ query }, userId, day),
+    fetchBookingUnlocked({ query }, userId),
+  ]);
   return {
     claimedAmount: marked.amount,
-    session: buildSessionPayload({ cfg, day, state, walletBalance }),
+    session: buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked }),
   };
 }

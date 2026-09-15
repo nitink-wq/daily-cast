@@ -38,7 +38,8 @@
       "rollCta": "Roll the dice",
       "rollingLabel": "Rolling…",
       "doneTitle": "Done for today!",
-      "doneBody": "Come back tomorrow for 3 free rolls."
+      "doneBody": "Come back tomorrow for 3 free rolls.",
+      "bookTomorrowNote": "Complete a booking tomorrow to unlock tomorrow's reward."
     },
     "result": {
       "winTitle": "Hooray, you won!",
@@ -63,6 +64,10 @@
     "blocked": {
       "title": "Login required",
       "body": "Please login from the AstroLokal app to access this page."
+    },
+    "locked": {
+      "title": "Dice locked",
+      "body": "Complete one booking today to unlock the dice."
     },
     "error": {
       "title": "Something went wrong",

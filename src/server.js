@@ -66,6 +66,7 @@ const ERROR_STATUS = {
   NOTHING_TO_CLAIM: 409,
   CONFLICT: 409,
   RATE_LIMITED: 429,
+  BOOKING_REQUIRED: 403,
 };
 
 function requireUser(req) {
@@ -92,6 +93,8 @@ function sendError(res, err) {
     // hardcoded even on failure paths.
     const copy = err.code === 'NO_USER' || err.code === 'INVALID_USER'
       ? cfg.copy.blocked
+      : err.code === 'BOOKING_REQUIRED'
+      ? cfg.copy.locked
       : cfg.copy.error;
     return res.status(ERROR_STATUS[err.code] || 400).json({ error: err.code, copy });
   }
