@@ -7,6 +7,7 @@ import { loadConfig } from './config.js';
 import { healthcheck, closePool, query } from './db.js';
 import { todayKey } from './day.js';
 import { getSession, cast, claim, isValidUserId, StateError } from './state.js';
+import { syncRedashWalletData, redashSyncEnabled } from './redash-sync.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -165,6 +166,20 @@ app.post('/api/track', async (req, res) => {
     console.error('[track] failed', err.message);
   }
 });
+
+// --- redash wallet-balance sync ---------------------------------------------
+// Every 5 min, mirror the Redash query result into our own DB (see
+// src/redash-sync.js). Optional: if the env vars aren't set (e.g. local
+// dev), the sync is simply skipped rather than failing boot.
+if (redashSyncEnabled()) {
+  const runRedashSync = () => syncRedashWalletData().catch((err) => {
+    console.error('[redash-sync] failed', err.message);
+  });
+  runRedashSync();
+  setInterval(runRedashSync, 5 * 60 * 1000).unref();
+} else {
+  console.log('[redash-sync] REDASH_HOST/REDASH_QUERY_ID/REDASH_API_KEY not set — sync disabled');
+}
 
 // --- boot / graceful shutdown ---------------------------------------------
 const port = Number(process.env.PORT || 3000);
