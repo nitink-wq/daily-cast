@@ -24,23 +24,67 @@ export class StateError extends Error {
   }
 }
 
+// recharge_count comes from the client's URL query string, so it's untrusted
+// input — never NaN/negative/non-integer past this point. Missing or
+// malformed values fail safe to 0 (the capped, "no active stream account"
+// regime), never to the uncapped one.
+export function normalizeRechargeCount(raw) {
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? Math.trunc(n) : 0;
+}
+
+function randomInt(min, max) {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+// Day 8+ payout for accounts with an active recharge (RC>0): no lifetime cap,
+// just a per-roll random draw — usually minReward..maxReward, rarely (by
+// jackpotChance) a bigger jackpotMin..jackpotMax draw. True randomness here
+// is deliberate, unlike the deterministic first-7-days schedule below.
+function drawPostScheduleReward(psr) {
+  if (Math.random() < psr.jackpotChance) return randomInt(psr.jackpotMin, psr.jackpotMax);
+  return randomInt(psr.minReward, psr.maxReward);
+}
+
 // ---------------------------------------------------------------------------
-// Reward plan: a pure lookup into the fixed rewardSchedule, keyed by how many
-// days (before today) the user has already played. Deterministic — no
+// Reward plan for the user's next day of casts, keyed by how many days
+// (before today) they've already played.
+//
+// Days 0-6: a pure lookup into the fixed rewardSchedule. Deterministic — no
 // randomness — so every user wins the same guaranteed amounts on the same
-// days (brief: "user should win something for the first 7 days"). Days past
-// the schedule pay nothing (the schedule's total already equals the lifetime
-// budget). Still defensively clamped to the remaining lifetime budget and the
-// per-day cap in case the schedule is ever edited without updating the budget.
-function buildRewardPlan(cfg, stats) {
+// days (brief: "user should win something for the first 7 days"), clamped to
+// the remaining lifetime budget and the per-day cap in case the schedule is
+// ever edited without updating the budget. recharge_count has no effect here.
+//
+// Day 7+: RC=0 still pays nothing (lifetime winnings stay capped at
+// totalBudget, same as today). RC>0 switches to drawPostScheduleReward with
+// no lifetime-budget or per-day-cap clamping — "unlocked" is returned
+// alongside the plan so cast() knows to skip those clamps for this day.
+function buildRewardPlan(cfg, stats, rechargeCount) {
   const lr = cfg.lifetimeReward;
-  const dayPlan = lr.rewardSchedule[stats.daysPlayed] || new Array(cfg.castsPerDay).fill(0);
-  let room = Math.max(0, lr.totalBudget - stats.lifetimeEarned);
-  return dayPlan.map((amount) => {
-    const grant = Math.max(0, Math.min(amount, room, cfg.rewardCapPerDay));
-    room -= grant;
-    return grant;
-  });
+  const scheduled = lr.rewardSchedule[stats.daysPlayed];
+  if (scheduled) {
+    let room = Math.max(0, lr.totalBudget - stats.lifetimeEarned);
+    const plan = scheduled.map((amount) => {
+      const grant = Math.max(0, Math.min(amount, room, cfg.rewardCapPerDay));
+      room -= grant;
+      return grant;
+    });
+    return { plan, unlocked: false };
+  }
+
+  if (rechargeCount > 0) {
+    const plan = Array.from({ length: cfg.castsPerDay }, () => drawPostScheduleReward(lr.postScheduleRandomReward));
+    return { plan, unlocked: true };
+  }
+
+  return { plan: new Array(cfg.castsPerDay).fill(0), unlocked: false };
+}
+
+// user_daily_states.reward_plan was a bare array before postScheduleRandomReward
+// existed; accept that shape too so old rows don't break.
+function planAndUnlocked(rewardPlanJson) {
+  return Array.isArray(rewardPlanJson) ? { plan: rewardPlanJson, unlocked: false } : rewardPlanJson;
 }
 
 // Lifetime winnings = SUM(earned + redeemed_amount): `earned` moves to
@@ -70,16 +114,19 @@ async function fetchWalletBalance(executor, userId) {
 
 // ---------------------------------------------------------------------------
 // Daily state row
-async function lockDailyState(client, userId, day, cfg) {
+async function lockDailyState(client, userId, day, cfg, rechargeCount) {
   // Insert-if-absent then lock. ON CONFLICT DO NOTHING makes concurrent
   // first-touch from two pods safe; FOR UPDATE serializes everything after.
+  // Whichever recharge_count is present at this first touch decides the
+  // whole day's plan — later same-day changes to it don't retroactively
+  // reshuffle an already-frozen plan, same as the schedule days always did.
   const stats = await fetchLifetimeStats(client, userId, day);
-  const plan = buildRewardPlan(cfg, stats);
+  const rewardPlan = buildRewardPlan(cfg, stats, rechargeCount);
   await client.query(
     `INSERT INTO user_daily_states (user_id, day, reward_plan)
      VALUES ($1, $2, $3)
      ON CONFLICT (user_id, day) DO NOTHING`,
-    [userId, day, JSON.stringify(plan)],
+    [userId, day, JSON.stringify(rewardPlan)],
   );
   const { rows } = await client.query(
     'SELECT * FROM user_daily_states WHERE user_id = $1 AND day = $2 FOR UPDATE',
@@ -129,18 +176,22 @@ export async function getSession(userId) {
   return buildSessionPayload({ cfg, day, state, walletBalance });
 }
 
-export async function cast(userId) {
+export async function cast(userId, rechargeCount = 0) {
   const cfg = loadConfig();
   const day = todayKey();
   return withTx(async (client) => {
-    const state = await lockDailyState(client, userId, day, cfg);
+    const state = await lockDailyState(client, userId, day, cfg, rechargeCount);
     if (state.casts_used >= cfg.castsPerDay) {
       throw new StateError('EXHAUSTED', 'no casts left today');
     }
 
-    const plan = state.reward_plan;
-    // Hard cap enforced in logic regardless of plan contents.
-    const reward = Math.max(0, Math.min(plan[state.casts_used] ?? 0, cfg.rewardCapPerDay - state.earned));
+    const { plan, unlocked } = planAndUnlocked(state.reward_plan);
+    // Unlocked (RC>0, day 8+) days have no lifetime-budget or per-day-cap
+    // clamp — a jackpot roll is allowed to actually pay out above the normal
+    // daily cap. Every other day keeps the hard cap regardless of plan
+    // contents.
+    const dailyCap = unlocked ? 1_000_000_000 : cfg.rewardCapPerDay;
+    const reward = Math.max(0, Math.min(plan[state.casts_used] ?? 0, dailyCap - state.earned));
 
     // Guarded update: the WHERE clause re-checks casts_used so even a bug
     // above could never over-count attempts.
@@ -151,7 +202,7 @@ export async function cast(userId) {
               updated_at = now()
         WHERE user_id = $1 AND day = $2 AND casts_used = $5
         RETURNING *`,
-      [userId, day, reward, cfg.rewardCapPerDay, state.casts_used],
+      [userId, day, reward, dailyCap, state.casts_used],
     );
     if (updated.rowCount !== 1) {
       throw new StateError('CONFLICT', 'concurrent cast detected, retry');

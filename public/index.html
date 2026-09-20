@@ -390,6 +390,7 @@
   const $ = (id) => document.getElementById(id);
   const params = new URLSearchParams(location.search);
   const userId = params.get('user_id');
+  const rechargeCount = params.get('recharge_count') || '';
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const DAY_TZ = 'Asia/Kolkata'; // must match the server's product-day boundary
 
@@ -754,7 +755,7 @@
       const result = await api('/api/cast', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ user_id: userId }),
+        body: JSON.stringify({ user_id: userId, recharge_count: rechargeCount }),
       });
       const face = landingFace(result.reward);
       if (reducedMotion) {

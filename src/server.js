@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { loadConfig } from './config.js';
 import { healthcheck, closePool, query } from './db.js';
 import { todayKey } from './day.js';
-import { getSession, cast, claim, isValidUserId, StateError } from './state.js';
+import { getSession, cast, claim, isValidUserId, normalizeRechargeCount, StateError } from './state.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -111,7 +111,8 @@ app.get('/api/session', async (req, res) => {
 app.post('/api/cast', async (req, res) => {
   try {
     const userId = requireUserRateLimited(req, 'cast', 20, 5 * 60_000);
-    res.json(await cast(userId));
+    const rechargeCount = normalizeRechargeCount(req.body?.recharge_count);
+    res.json(await cast(userId, rechargeCount));
   } catch (err) {
     sendError(res, err);
   }

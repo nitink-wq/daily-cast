@@ -33,6 +33,15 @@ export function loadConfig() {
         day.some((g) => !Number.isInteger(g) || g < 0))) {
     throw new Error(`config: lifetimeReward.rewardSchedule must be a non-empty array of ${raw.castsPerDay}-integer day plans`);
   }
+  const psr = lr.postScheduleRandomReward;
+  if (!psr ||
+      !Number.isInteger(psr.minReward) || psr.minReward < 0 ||
+      !Number.isInteger(psr.maxReward) || psr.maxReward < psr.minReward ||
+      typeof psr.jackpotChance !== 'number' || psr.jackpotChance < 0 || psr.jackpotChance > 1 ||
+      !Number.isInteger(psr.jackpotMin) || psr.jackpotMin < psr.maxReward ||
+      !Number.isInteger(psr.jackpotMax) || psr.jackpotMax < psr.jackpotMin) {
+    throw new Error('config: lifetimeReward.postScheduleRandomReward is missing or malformed (need integer minReward <= maxReward <= jackpotMin <= jackpotMax, and jackpotChance in [0,1])');
+  }
 
   cached = raw;
   return cached;
