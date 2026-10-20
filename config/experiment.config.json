@@ -1,18 +1,14 @@
 {
-  "_note": "All user-visible content lives here. Edit freely and restart; logic never depends on the wording. castsPerDay, rewardCapPerDay and rewardSchedule are the A/B knobs.",
+  "_note": "All user-visible content lives here. Edit freely and restart; logic never depends on the wording. castsPerDay, rewardCapPerDay and walletTiers are the A/B knobs.",
   "castsPerDay": 3,
-  "rewardCapPerDay": 20,
-  "lifetimeReward": {
-    "_note": "Experiment runs ~2 weeks. rewardSchedule[daysPlayed] is the fixed [roll1, roll2, roll3] payout for that day index (0 = user's very first day) — every user wins something on each of their first 7 days, no randomness. Days beyond the schedule pay nothing (totalBudget is already fully spent by day 7).",
-    "totalBudget": 90,
-    "rewardSchedule": [
-      [5, 10, 5],
-      [5, 5, 5],
-      [0, 10, 5],
-      [5, 0, 5],
-      [0, 5, 5],
-      [5, 5, 0],
-      [5, 0, 5]
+  "rewardCapPerDay": 50,
+  "walletTiers": {
+    "_note": "Rewards depend only on the user's current AstroLokal wallet balance (from the Redash sync), read once at the day's first roll — same tiers every day. A balance goes to the FIRST tier whose maxBalance it is <= (boundaries belong to the lower tier); the last tier has maxBalance null and catches everything above. rewards = the fixed [roll1, roll2, roll3] payout; 0 = Better luck.",
+    "tiers": [
+      { "maxBalance": 45,   "rewards": [20, 10, 20] },
+      { "maxBalance": 55,   "rewards": [20, 10, 10] },
+      { "maxBalance": 65,   "rewards": [20, 0, 10] },
+      { "maxBalance": null, "rewards": [10, 0, 10] }
     ]
   },
   "coinCredit": {
@@ -28,7 +24,7 @@
   "copy": {
     "_note": "Keep every label in simple, everyday words (tier-2/3 audience).",
     "ledger": {
-      "title": "Coins to Redeem",
+      "title": "Total Won",
       "unit": "coins",
       "claimCta": "Redeem",
       "claimedLabel": "Redeemed ✓"
@@ -38,8 +34,7 @@
       "rollCta": "Roll the dice",
       "rollingLabel": "Rolling…",
       "doneTitle": "Done for today!",
-      "doneBody": "Come back tomorrow for 3 free rolls.",
-      "bookTomorrowNote": "Complete a booking tomorrow to unlock tomorrow's reward."
+      "bookTomorrowNote": "Talk to an astrologer for 5 minutes tomorrow to unlock tomorrow's rolls."
     },
     "result": {
       "winTitle": "Hooray, you won!",
@@ -53,7 +48,7 @@
     },
     "progress": {
       "leftTemplate": "{n} of {total} rolls left today",
-      "nextRollTemplate": "Next free roll in {time}"
+      "nextRollTemplate": "Next {total} rolls in {time}"
     },
     "redeemModal": {
       "creditingTitle": "Crediting coins to your wallet…",
@@ -67,7 +62,9 @@
     },
     "locked": {
       "title": "Dice locked",
-      "body": "Complete one booking today to unlock the dice."
+      "_note": "The 5 here must match the HAVING threshold in the Redash query — the app no longer knows the minutes itself.",
+      "body": "Talk to an astrologer for 5 minutes today to unlock the dice.",
+      "talkNowCta": "Talk Now!"
     },
     "error": {
       "title": "Something went wrong",

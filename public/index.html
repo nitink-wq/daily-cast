@@ -109,13 +109,17 @@
   /* backfaces stay VISIBLE so the cube reads as a solid object — hiding
      them opens see-through holes mid-tumble (mirrored insides are always
      occluded by the opaque near faces) */
-  /* faces: near-square corners + one flat colour = a closed, solid die
-     (large radii opened visible notches at the cube's corners) */
-  .cf{position:absolute;width:92px;height:92px;border-radius:4px;
+  /* faces: rounded corners like a real die. Rounding opens a notch at each
+     of the cube's 8 corners; the .cf-corner triangles below fill it so the
+     die still reads as solid. The edge shading suggests rounded edges. */
+  .cf{position:absolute;width:92px;height:92px;border-radius:18px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
     background:#FAE9C7;
-    border:1px solid #EBC27A;
-    box-shadow:inset 0 1px 0 #FFF6E3, inset 0 -6px 12px rgba(200,140,40,.16)}
+    /* even, direction-free edge shading: identical on every face whatever its
+       rotation (directional top/bottom insets read differently per face) */
+    box-shadow:inset 0 0 0 1px rgba(214,160,70,.28), inset 0 0 12px rgba(200,140,40,.2)}
+  /* corner fill: one flat triangle per cube corner (built by buildDieCorners) */
+  .cf-corner{position:absolute;background:#F4DDB2;clip-path:polygon(50% 0,100% 100%,0 100%)}
   .cf b{font-family:'Lora',serif;font-size:34px;font-weight:700;line-height:1;
     background:linear-gradient(160deg,var(--primary-2) 0%,var(--primary-deep) 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
   .cf em{font-style:normal;font-size:10px;font-weight:700;letter-spacing:.08em;color:#A87A15;text-transform:uppercase}
@@ -139,9 +143,9 @@
   .stage.rolling .halo{animation-duration:1.2s}
 
   /* ---- D. progress / reset timer ---- */
-  .progress{display:flex;align-items:center;gap:10px}
-  .p-dots{display:flex;gap:7px}
-  .p-dot{width:12px;height:12px;background:#EAD9C6;
+  .progress{display:flex;flex-direction:column;align-items:center;gap:8px}  /* stars above the text */
+  .p-dots{display:flex;gap:10px}
+  .p-dot{width:18px;height:18px;background:#EAD9C6;
     clip-path:polygon(50% 0%,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0% 50%,39% 39%)}
   .p-dot.used{background:linear-gradient(135deg,var(--primary-2),var(--primary-deep))}
   .p-text{font-size:13px;font-weight:600;color:#8C7263}
@@ -153,6 +157,20 @@
   .cast-done{text-align:center;display:none}
   .cast-done .dt{font-family:'Lora',serif;font-size:19px;font-weight:600;color:var(--ink)}
   .cast-done .db{font-size:13px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+
+  /* ---- dice locked (no booking today): only the roll is gated — the
+     wallet above stays redeemable. Die blurs + stills behind a lock badge. ---- */
+  .cast-locked{text-align:center;display:none}
+  .cast-locked .lt{font-family:'Lora',serif;font-size:19px;font-weight:600;color:var(--ink)}
+  .cast-locked .lb{font-size:13px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+  .lock-badge{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;
+    display:none;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;
+    background:var(--surface);color:var(--primary-deep);box-shadow:var(--shadow)}
+  .lock-badge svg{width:26px;height:26px}
+  .stage.locked .lock-badge{display:flex}
+  .stage.locked .scene,.stage.locked .d3-shadow{filter:blur(1.5px);opacity:.7}
+  .cast-locked .grad-btn{margin-top:14px}  .stage.locked .cube.idle,.stage.locked .ring{animation:none}
+  .stage.locked .halo{animation:none;opacity:.3}
 
   /* ---- overlays (result + redeem share the same chrome) ---- */
   .overlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;
@@ -214,7 +232,7 @@
   body.state-locked #locked{display:block}
   body.state-error #softError{display:block}
   body.state-ready #surface{display:flex}
-  .cast-note{font-size:12.5px;color:var(--ink-2);text-align:center;margin-top:10px;line-height:1.5}
+  .cast-note{font-size:12.5px;color:var(--ink-2);text-align:center;margin-top:0;line-height:1.5}  /* just the 15px card gap under "Done for today!" */
 
   /* ---- footer back-to-home: only shown once today's 3 rolls are used up ---- */
   .btn-home{display:none;font-family:inherit;font-size:14px;font-weight:700;color:#fff;border:none;cursor:pointer;
@@ -298,14 +316,19 @@
           <div class="scene" role="img" aria-label="dice">
             <div class="mover" id="mover">
               <div class="cube idle" id="cube">
-                <div class="cf cf1 big"><b>100</b><em>coins</em></div>
-                <div class="cf cf2"><b>20</b><em>coins</em></div>
+                <div class="cf cf1"><b>50</b><em>coins</em></div>
+                <div class="cf cf2"><b>10</b><em>coins</em></div>
                 <div class="cf cf3"><b>30</b><em>coins</em></div>
                 <div class="cf cf4 luck"><b>Better luck<br>next time</b></div>
-                <div class="cf cf5"><b>10</b><em>coins</em></div>
+                <div class="cf cf5"><b>20</b><em>coins</em></div>
                 <div class="cf cf6 luck"><b>Better luck<br>next time</b></div>
               </div>
             </div>
+          </div>
+          <div class="lock-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+            </svg>
           </div>
         </div>
         <!-- D. progress / reset timer -->
@@ -323,6 +346,10 @@
         <div class="cast-done" id="castDone">
           <div class="dt" id="doneTitle"></div>
           <div class="db" id="doneBody"></div>
+        </div>
+        <div class="cast-locked" id="castLocked">
+          <div class="lt" id="castLockedTitle"></div>
+          <div class="lb" id="castLockedBody"></div>          <button class="grad-btn" id="talkNowBtn" type="button"></button>
         </div>
         <div class="cast-note" id="bookAgainNote" style="display:none"></div>
       </section>
@@ -452,25 +479,53 @@
   // reward the server granted. Orientation = [rotX, rotY] that brings that
   // face front-on. -------
   const CUBE_FACES = [
-    { sel: '.cf1', value: 100, orient: [0, 0]    }, // front (100 faces out at rest)
-    { sel: '.cf2', value: 20,  orient: [0, -90]  }, // right
+    { sel: '.cf1', value: 50,  orient: [0, 0]    }, // front (50 faces out at rest)
+    { sel: '.cf2', value: 10,  orient: [0, -90]  }, // right
     { sel: '.cf3', value: 30,  orient: [0, 180]  }, // back
     { sel: '.cf4', value: 0,   orient: [0, 90]   }, // left  (better luck)
-    { sel: '.cf5', value: 10,  orient: [-90, 0]  }, // top
+    { sel: '.cf5', value: 20,  orient: [-90, 0]  }, // top
     { sel: '.cf6', value: 0,   orient: [90, 0]   }, // bottom (better luck)
   ];
+  // Corner fill for the rounded die: rounding each face's corners (18px, see
+  // .cf border-radius) leaves a hole at each of the cube's 8 corners. A flat
+  // triangle through the three points where that rounding starts — one on
+  // each edge meeting at the corner — closes it, so the die reads as solid
+  // with softly bevelled corners. Placed with matrix3d mapping the clipped
+  // triangle's apex / bottom-right / bottom-left exactly onto those points.
+  (function buildDieCorners() {
+    const F = 46, C = 46 - 18;                  // cube half-size; where rounding starts
+    const side = (F - C) * Math.SQRT2, h = side * Math.sqrt(3) / 2;
+    const cube = $('cube');
+    for (const sx of [-1, 1]) for (const sy of [-1, 1]) for (const sz of [-1, 1]) {
+      const p1 = [F * sx, F * sy, C * sz], p2 = [F * sx, C * sy, F * sz], p3 = [C * sx, F * sy, F * sz];
+      const mid = p2.map((v, i) => (v + p3[i]) / 2);
+      const u = p2.map((v, i) => (v - p3[i]) / side);   // local x axis
+      const v = mid.map((m, i) => (m - p1[i]) / h);     // local y axis
+      // box centre, nudged 0.75px in towards the cube centre: a triangle that
+      // touches the faces exactly z-fights (flickers) along those lines
+      const t = mid.map((m, i) => (m + p1[i]) / 2 - 0.75 * [sx, sy, sz][i] / Math.sqrt(3));
+      const n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]];
+      const el = document.createElement('div');
+      el.className = 'cf-corner';
+      el.setAttribute('aria-hidden', 'true');
+      el.style.cssText = 'width:' + side + 'px;height:' + h + 'px;left:' + (92 - side) / 2 + 'px;top:' +
+        (92 - h) / 2 + 'px;transform:matrix3d(' + [...u, 0, ...v, 0, ...n, 0, ...t, 1].join(',') + ')';
+      cube.prepend(el);
+    }
+  })();
+
   function landingFace(reward) {
     // restore the front face's default label (a rare odd amount may have
     // been printed on it by a previous roll)
     const front = $('cube').querySelector('.cf1');
-    front.firstElementChild.textContent = '100';
-    front.classList.add('big');
+    front.firstElementChild.textContent = '50';
+    front.classList.remove('big');
     if (!(Number(reward) > 0)) {
       return CUBE_FACES[Math.random() < 0.5 ? 3 : 5];
     }
     const exact = CUBE_FACES.find((f) => f.value === Number(reward));
     if (exact) return exact;
-    // uncommon amount (lifetime-budget clamp): print it on the front face
+    // amount with no face of its own (e.g. a tier edited in config): print it on the front face
     front.firstElementChild.textContent = String(reward);
     front.classList.toggle('big', String(reward).length > 2);
     return CUBE_FACES[0];
@@ -554,6 +609,7 @@
     $('ledgerUnit').textContent = copy.ledger.unit || '';
     $('doneTitle').textContent = copy.cast.doneTitle || '';
     $('doneBody').textContent = copy.cast.doneBody || '';
+    $('doneBody').hidden = !copy.cast.doneBody; // no empty line/gap when the copy is unset
   }
 
   function render() {
@@ -567,16 +623,25 @@
     claimBtn.textContent = copy.ledger.claimCta || '';
     claimBtn.disabled = !s.claimable || busy;
 
+    // Dice locked = no booking today. Only the roll is gated; the wallet
+    // above stays redeemable. A finished day reads as done, not locked.
+    const locked = !s.bookingUnlocked && !s.complete;
+    $('stage').classList.toggle('locked', locked);
+    $('castLocked').style.display = locked ? 'block' : 'none';
+    $('castLockedTitle').textContent = copy.locked.title || '';
+    $('castLockedBody').textContent = copy.locked.body || '';
+    $('talkNowBtn').textContent = copy.locked.talkNowCta || '';
+
     // C + D. roll button, progress or reset timer
     const rollBtn = $('rollBtn');
     rollBtn.textContent = busy ? (copy.cast.rollingLabel || '') : (copy.cast.rollCta || '');
-    rollBtn.disabled = busy || s.complete;
-    rollBtn.style.display = s.complete ? 'none' : '';
+    rollBtn.disabled = busy || s.complete || locked;
+    rollBtn.style.display = s.complete || locked ? 'none' : '';
     $('castDone').style.display = s.complete ? 'block' : 'none';
-    $('progressRow').style.display = s.complete ? 'none' : '';
+    $('progressRow').style.display = s.complete || locked ? 'none' : '';
     $('timer').style.display = s.complete ? 'flex' : 'none';
     if (s.complete) {
-      startTimer(copy.progress.nextRollTemplate);
+      startTimer(template(copy.progress.nextRollTemplate, { total: s.castsPerDay })); // {time} filled by the timer
     } else {
       stopTimer();
       const dots = $('progressDots');
@@ -589,10 +654,10 @@
       $('progressText').textContent = template(copy.progress.leftTemplate, { n: s.castsLeft, total: s.castsPerDay });
     }
 
-    // Reminder to book again tomorrow — only once they've actually rolled today.
+    // Reminder to book again tomorrow — only once all of today's rolls are used.
     const bookAgainNote = $('bookAgainNote');
     bookAgainNote.textContent = copy.cast.bookTomorrowNote || '';
-    bookAgainNote.style.display = s.castsUsed > 0 ? '' : 'none';
+    bookAgainNote.style.display = s.complete ? '' : 'none';
 
     // Back to Home — only once today's 3 rolls are used up.
     $('homeBtn').classList.toggle('visible', s.complete);
@@ -608,7 +673,7 @@
   }
   function showLocked(copy) {
     $('lockedTitle').textContent = (copy && copy.title) || 'Dice locked';
-    $('lockedBody').textContent = (copy && copy.body) || 'Complete one booking today to unlock the dice.';
+    $('lockedBody').textContent = (copy && copy.body) || 'Talk to an astrologer for 5 minutes today to unlock the dice.';
     setBodyState('locked');
   }
   function showError(copy) {
@@ -763,7 +828,7 @@
 
   // ------- actions -------
   async function doRoll() {
-    if (busy || !session || session.complete) return;
+    if (busy || !session || session.complete || !session.bookingUnlocked) return;
     busy = true;
     render();
     const stage = $('stage');
@@ -805,11 +870,12 @@
     if (!userId) { showBlocked(null); return; }
     try {
       session = await api('/api/session?user_id=' + encodeURIComponent(userId || ''));
-      if (!session.bookingUnlocked) { showLocked(session.copy.locked); return; }
+      // Locked users still get the full page (wallet + redeem); render()
+      // gates only the dice.
       render();
       if (!load.viewTracked) {
         load.viewTracked = true; // once per page open, not per retry/refresh
-        track('viewed_daily_dice', 'page_load', { rolls_used: session.castsUsed, wallet_balance: session.walletBalance });
+        track('viewed_daily_dice', 'page_load', { rolls_used: session.castsUsed, wallet_balance: session.walletBalance, dice_locked: !session.bookingUnlocked });
       }
     } catch (err) {
       if (err.status === 401 || err.status === 400) showBlocked(err.data && err.data.copy);
@@ -826,6 +892,12 @@
     // event name + source differ, so the two taps are distinguishable in
     // analytics without diverging in behavior.
     track('tap_back_home', 'footer', { rolls_used: session ? session.castsUsed : null });
+    goBack();
+  });
+  $('talkNowBtn').addEventListener('click', () => {
+    // Locked dice → send them to book: same GO_BACK bridge / home deeplink
+    // as the other home buttons; only the event name differs.
+    track('tap_talk_now', 'cast_card', { wallet_balance: session ? session.walletBalance : null });
     goBack();
   });
   $('rollBtn').addEventListener('click', () => {

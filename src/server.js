@@ -143,6 +143,7 @@ const TRACK_EVENTS = new Set([
   'tap_final_continue',
   'tap_back',
   'tap_back_home',
+  'tap_talk_now',
 ]);
 // Only sources this client ever actually sends. sendBeacon requests are not
 // subject to CORS preflight, so a third-party page could fire arbitrary

@@ -25,35 +25,28 @@ export class StateError extends Error {
 }
 
 // ---------------------------------------------------------------------------
-// Reward plan: a pure lookup into the fixed rewardSchedule, keyed by how many
-// days (before today) the user has already played. Deterministic — no
-// randomness — so every user wins the same guaranteed amounts on the same
-// days (brief: "user should win something for the first 7 days"). Days past
-// the schedule pay nothing (the schedule's total already equals the lifetime
-// budget). Still defensively clamped to the remaining lifetime budget and the
-// per-day cap in case the schedule is ever edited without updating the budget.
-function buildRewardPlan(cfg, stats) {
-  const lr = cfg.lifetimeReward;
-  const dayPlan = lr.rewardSchedule[stats.daysPlayed] || new Array(cfg.castsPerDay).fill(0);
-  let room = Math.max(0, lr.totalBudget - stats.lifetimeEarned);
-  return dayPlan.map((amount) => {
-    const grant = Math.max(0, Math.min(amount, room, cfg.rewardCapPerDay));
+// Reward plan: a pure lookup into walletTiers by the user's current AstroLokal
+// wallet balance (from the Redash sync). Deterministic and the same every day
+// — no day index, no lifetime budget. A balance goes to the first tier whose
+// maxBalance it is <= (boundaries belong to the lower tier); the last tier is
+// open-ended. Still clamped to the per-day cap in case the tiers are ever
+// edited past it.
+function buildRewardPlan(cfg, walletBalance) {
+  const tier = cfg.walletTiers.tiers.find((t) => t.maxBalance === null || walletBalance <= t.maxBalance);
+  let room = cfg.rewardCapPerDay;
+  const plan = tier.rewards.map((amount) => {
+    const grant = Math.max(0, Math.min(amount, room));
     room -= grant;
     return grant;
   });
+  // The balance + tier ride along with the plan so analysis can tell which
+  // tier each user-day was paid from.
+  return { plan, walletBalance, tierMaxBalance: tier.maxBalance };
 }
 
-// Lifetime winnings = SUM(earned + redeemed_amount): `earned` moves to
-// `redeemed_amount` on redeem, so nothing ever won is double-counted or lost.
-async function fetchLifetimeStats(executor, userId, day) {
-  const { rows } = await executor.query(
-    `SELECT COUNT(*)::int AS days_played,
-            COALESCE(SUM(earned + redeemed_amount), 0)::int AS lifetime_earned
-       FROM user_daily_states
-      WHERE user_id = $1 AND day < $2`,
-    [userId, day],
-  );
-  return { daysPlayed: rows[0].days_played, lifetimeEarned: rows[0].lifetime_earned };
+// reward_plan was a bare array before wallet tiers existed; accept both shapes.
+function planOf(rewardPlanJson) {
+  return Array.isArray(rewardPlanJson) ? rewardPlanJson : rewardPlanJson.plan;
 }
 
 // Wallet balance is NOT reset at day rollover — coins won on any day sit in
@@ -68,25 +61,27 @@ async function fetchWalletBalance(executor, userId) {
   return rows[0].balance;
 }
 
-// The dice is only unlocked for users who show up in today's Redash booking
-// sync (src/redash-sync.js), refreshed every 5 min. Presence, not content,
-// is what matters — this is a pure existence check against our own mirror
-// table, never Redash directly.
-async function fetchBookingUnlocked(executor, userId) {
+// The user's AstroLokal wallet balance from the Redash sync
+// (src/redash-sync.js, refreshed every 5 min) — read from our own mirror
+// table, never Redash directly — or null when they aren't in it. The query
+// itself only returns users who've talked 5+ minutes today, so presence
+// unlocks the dice and the balance drives the reward tier.
+async function fetchSyncedWalletBalance(executor, userId) {
   const { rows } = await executor.query(
-    'SELECT 1 FROM redash_wallet_sync WHERE user_id = $1',
+    'SELECT current_wallet_balance FROM redash_wallet_sync WHERE user_id = $1',
     [userId],
   );
-  return rows.length > 0;
+  return rows.length > 0 ? Number(rows[0].current_wallet_balance) : null;
 }
 
 // ---------------------------------------------------------------------------
 // Daily state row
-async function lockDailyState(client, userId, day, cfg) {
+async function lockDailyState(client, userId, day, cfg, walletBalance) {
   // Insert-if-absent then lock. ON CONFLICT DO NOTHING makes concurrent
   // first-touch from two pods safe; FOR UPDATE serializes everything after.
-  const stats = await fetchLifetimeStats(client, userId, day);
-  const plan = buildRewardPlan(cfg, stats);
+  // The balance at this first touch decides the whole day's plan — spending
+  // or redeeming between rolls can't re-tier an already-frozen plan.
+  const plan = buildRewardPlan(cfg, walletBalance);
   await client.query(
     `INSERT INTO user_daily_states (user_id, day, reward_plan)
      VALUES ($1, $2, $3)
@@ -110,7 +105,7 @@ async function readDailyState(executor, userId, day) {
 
 // ---------------------------------------------------------------------------
 // Session payload — the only shape the client ever renders.
-function buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked }) {
+function buildSessionPayload({ cfg, day, state, walletBalance, syncedBalance }) {
   const castsUsed = state ? state.casts_used : 0;
   const complete = castsUsed >= cfg.castsPerDay;
 
@@ -123,7 +118,7 @@ function buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked }
     rewardCap: cfg.rewardCapPerDay,
     walletBalance,
     claimable: walletBalance > 0,
-    bookingUnlocked,
+    bookingUnlocked: syncedBalance !== null,
     nav: cfg.nav || null,
     copy: cfg.copy,
   };
@@ -135,29 +130,29 @@ function buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked }
 export async function getSession(userId) {
   const cfg = loadConfig();
   const day = todayKey();
-  const [state, walletBalance, bookingUnlocked] = await Promise.all([
+  const [state, walletBalance, syncedBalance] = await Promise.all([
     readDailyState({ query }, userId, day),
     fetchWalletBalance({ query }, userId),
-    fetchBookingUnlocked({ query }, userId),
+    fetchSyncedWalletBalance({ query }, userId),
   ]);
-  return buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked });
+  return buildSessionPayload({ cfg, day, state, walletBalance, syncedBalance });
 }
 
 export async function cast(userId) {
   const cfg = loadConfig();
   const day = todayKey();
   return withTx(async (client) => {
-    const bookingUnlocked = await fetchBookingUnlocked(client, userId);
-    if (!bookingUnlocked) {
-      throw new StateError('BOOKING_REQUIRED', 'booking required to unlock dice');
+    const syncedBalance = await fetchSyncedWalletBalance(client, userId);
+    if (syncedBalance === null) {
+      throw new StateError('BOOKING_REQUIRED', 'no 5-minute booking today');
     }
 
-    const state = await lockDailyState(client, userId, day, cfg);
+    const state = await lockDailyState(client, userId, day, cfg, syncedBalance);
     if (state.casts_used >= cfg.castsPerDay) {
       throw new StateError('EXHAUSTED', 'no casts left today');
     }
 
-    const plan = state.reward_plan;
+    const plan = planOf(state.reward_plan);
     // Hard cap enforced in logic regardless of plan contents.
     const reward = Math.max(0, Math.min(plan[state.casts_used] ?? 0, cfg.rewardCapPerDay - state.earned));
 
@@ -177,7 +172,7 @@ export async function cast(userId) {
     }
 
     const walletBalance = await fetchWalletBalance(client, userId);
-    const payload = buildSessionPayload({ cfg, day, state: updated.rows[0], walletBalance, bookingUnlocked });
+    const payload = buildSessionPayload({ cfg, day, state: updated.rows[0], walletBalance, syncedBalance });
     return { reward, session: payload };
   });
 }
@@ -234,13 +229,13 @@ export async function claim(userId) {
   // insert inside fireCoinCredit is the gate.
   await fireCoinCredit({ userId, day, amount: marked.amount, idempotencyKey: marked.idempotencyKey });
 
-  const [walletBalance, state, bookingUnlocked] = await Promise.all([
+  const [walletBalance, state, syncedBalance] = await Promise.all([
     fetchWalletBalance({ query }, userId),
     readDailyState({ query }, userId, day),
-    fetchBookingUnlocked({ query }, userId),
+    fetchSyncedWalletBalance({ query }, userId),
   ]);
   return {
     claimedAmount: marked.amount,
-    session: buildSessionPayload({ cfg, day, state, walletBalance, bookingUnlocked }),
+    session: buildSessionPayload({ cfg, day, state, walletBalance, syncedBalance }),
   };
 }

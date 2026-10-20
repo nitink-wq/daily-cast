@@ -1,6 +1,6 @@
 // Loads the experiment config. All user-visible "content" strings live in
 // config so the experiment owner can re-content and A/B (casts per day,
-// reward schedule, cap, copy) without touching logic.
+// wallet-balance reward tiers, cap, copy) without touching logic.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,15 +23,18 @@ export function loadConfig() {
   if (!Number.isInteger(raw.rewardCapPerDay) || raw.rewardCapPerDay < 0) {
     throw new Error('config: rewardCapPerDay must be a non-negative integer');
   }
-  const lr = raw.lifetimeReward;
-  if (!lr || !Number.isInteger(lr.totalBudget) || lr.totalBudget <= 0) {
-    throw new Error('config: lifetimeReward.totalBudget must be a positive integer');
+  const tiers = raw.walletTiers?.tiers;
+  if (!Array.isArray(tiers) || tiers.length < 1 ||
+      tiers.some((t) =>
+        !Array.isArray(t.rewards) || t.rewards.length !== raw.castsPerDay ||
+        t.rewards.some((g) => !Number.isInteger(g) || g < 0))) {
+    throw new Error(`config: walletTiers.tiers must be a non-empty array of tiers with ${raw.castsPerDay}-integer rewards`);
   }
-  if (!Array.isArray(lr.rewardSchedule) || lr.rewardSchedule.length < 1 ||
-      lr.rewardSchedule.some((day) =>
-        !Array.isArray(day) || day.length !== raw.castsPerDay ||
-        day.some((g) => !Number.isInteger(g) || g < 0))) {
-    throw new Error(`config: lifetimeReward.rewardSchedule must be a non-empty array of ${raw.castsPerDay}-integer day plans`);
+  // Ascending maxBalance, last tier open-ended (null) so every balance lands somewhere.
+  const bounds = tiers.map((t) => t.maxBalance);
+  if (bounds.at(-1) !== null ||
+      bounds.slice(0, -1).some((b, i) => !Number.isFinite(b) || (i > 0 && b <= bounds[i - 1]))) {
+    throw new Error('config: walletTiers.tiers maxBalance must be ascending numbers, with the last tier null');
   }
 
   cached = raw;
