@@ -100,7 +100,8 @@ The query (lives in Redash, not run by this app):
 
 ```sql
 WITH bounds AS (
-  SELECT date_trunc('day', NOW() + INTERVAL '330 minutes') - INTERVAL '330 minutes' AS day_start  -- today's IST midnight, in UTC
+  -- today's IST midnight, and tomorrow's
+  SELECT date_trunc('day', NOW() AT TIME ZONE 'Asia/Kolkata') AT TIME ZONE 'Asia/Kolkata' AS day_start
 ),
 eligible AS (
   SELECT b.user_id
@@ -111,13 +112,19 @@ eligible AS (
     AND b.started_at <  bounds.day_start + INTERVAL '1 day'
     AND NOT EXISTS (SELECT 1 FROM experts_expert e WHERE e.user_id = b.user_id)
   GROUP BY b.user_id
-  HAVING SUM(EXTRACT(EPOCH FROM (b.ended_at - b.started_at))) >= 300   -- 5 minutes total today
+  HAVING SUM(EXTRACT(EPOCH FROM (b.ended_at - b.started_at))) >= 300   -- 5 minutes total today (IST day)
 )
 SELECT el.user_id, w.balance AS current_wallet_balance
 FROM eligible el
 LEFT JOIN wallets_wallet w ON w.user_id = el.user_id
 ORDER BY el.user_id;
 ```
+
+The day runs midnight to midnight IST whatever timezone the DB or Redash
+session uses, matching the app's own IST day (`src/day.js`). This assumes
+`started_at` is `timestamp with time zone`; if it's `timestamp without time
+zone` holding IST times, drop the trailing `AT TIME ZONE 'Asia/Kolkata'` in
+`bounds`.
 
 The sync needs exactly the columns `user_id` and `current_wallet_balance`
 (a `null` balance counts as 0). Each `user_id` must appear once —
