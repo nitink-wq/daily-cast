@@ -229,7 +229,6 @@
     background:var(--surface);border:1.5px solid var(--primary);border-radius:999px;padding:10px 26px;margin-top:16px}
   #surface{display:none;flex-direction:column;gap:18px}
   body.state-blocked #blocked{display:block}
-  body.state-locked #locked{display:block}
   body.state-error #softError{display:block}
   body.state-ready #surface{display:flex}
   .cast-note{font-size:12.5px;color:var(--ink-2);text-align:center;margin-top:0;line-height:1.5}  /* just the 15px card gap under "Done for today!" */
@@ -272,10 +271,6 @@
       <div class="sb" id="blockedBody"></div>
     </section>
 
-    <section class="bx state-card" id="locked">
-      <div class="st" id="lockedTitle"></div>
-      <div class="sb" id="lockedBody"></div>
-    </section>
 
     <section class="bx state-card" id="softError">
       <div class="st" id="errorTitle"></div>
@@ -670,11 +665,6 @@
     $('blockedTitle').textContent = (copy && copy.title) || 'Login required';
     $('blockedBody').textContent = (copy && copy.body) || 'Please login from the AstroLokal app to access this page.';
     setBodyState('blocked');
-  }
-  function showLocked(copy) {
-    $('lockedTitle').textContent = (copy && copy.title) || 'Dice locked';
-    $('lockedBody').textContent = (copy && copy.body) || 'Talk to an astrologer for 5 minutes today to unlock the dice.';
-    setBodyState('locked');
   }
   function showError(copy) {
     $('errorTitle').textContent = (copy && copy.title) || 'Something went wrong';
