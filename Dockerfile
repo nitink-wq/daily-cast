@@ -1,6 +1,6 @@
 # Node 24 (current LTS). Same image serves two roles: the web app and the
 # one-shot migration job — only the command differs.
-FROM node:24-alpine AS base
+FROM node:24.22.1-alpine AS base
 
 WORKDIR /app
 ENV NODE_ENV=production
