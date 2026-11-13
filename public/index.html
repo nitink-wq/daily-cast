@@ -310,7 +310,7 @@
       </section>
     </div>
 
-    <button class="btn-home" id="homeBtn" type="button">Back to Home</button>
+    <button class="btn-home" id="homeBtn" type="button"></button>
   </main>
 </div>
 
@@ -544,8 +544,19 @@
       $('progressText').textContent = template(copy.progress.leftTemplate, { n: s.castsLeft, total: s.castsPerDay });
     }
 
-    // Back to Home — only once all free rolls are used up (for good, not just today).
-    $('homeBtn').classList.toggle('visible', s.complete);
+    // Bottom CTA — only once all free rolls are used up (for good, not just
+    // today). While there's still a balance to redeem it mirrors the ledger's
+    // Redeem button (two ways to trigger the same claim); once redeemed
+    // (balance hits 0 — this campaign's reward is never zero, so 0 here can
+    // only mean "already claimed") it switches to sending them to actually
+    // spend those coins talking to an astrologer.
+    const homeBtn = $('homeBtn');
+    homeBtn.classList.toggle('visible', s.complete);
+    if (s.complete) {
+      const redeemed = s.walletBalance <= 0;
+      homeBtn.textContent = redeemed ? (copy.cast.doneAstrologerCta || '') : (copy.cast.doneRedeemCta || '');
+      homeBtn.disabled = !redeemed && busy;
+    }
 
     setBodyState('ready');
   }
@@ -764,9 +775,14 @@
     goBack();
   });
   $('homeBtn').addEventListener('click', () => {
-    // Same goBack() bridge/deeplink as the header back arrow — only the
-    // event name + source differ, so the two taps are distinguishable in
-    // analytics without diverging in behavior.
+    // Dual-purpose: before redeeming, this button IS a redeem trigger
+    // (mirrors the ledger's own Redeem button — either one works). After
+    // redeeming (walletBalance back to 0), it sends the user off to spend
+    // those coins — same goBack() bridge/deeplink as the header back arrow.
+    if (session && session.complete && session.walletBalance > 0) {
+      runRedeem('footer');
+      return;
+    }
     track('tap_back_home', 'footer', { rolls_used: session ? session.castsUsed : null });
     goBack();
   });

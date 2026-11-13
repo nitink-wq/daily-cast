@@ -28,7 +28,9 @@
       "rollCta": "Roll the dice",
       "rollingLabel": "Rolling…",
       "doneTitle": "You've used all 3 spins!",
-      "doneBody": "No more rolls are left on this link. Redeem your coins below."
+      "doneBody": "Use your reward coins to talk with an astrologer.",
+      "doneRedeemCta": "Redeem",
+      "doneAstrologerCta": "Talk to an Astrologer"
     },
     "result": {
       "winTitle": "Hooray, you won!",
