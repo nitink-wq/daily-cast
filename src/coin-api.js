@@ -14,7 +14,7 @@
 // reconciliation worklist, queryable by status.
 //
 // Modes:
-//  - COIN_API_URL set   → fire the real API, at most once per user-day.
+//  - COIN_API_URL set   → fire the real API, at most once per redemption.
 //  - COIN_API_URL unset → stub: the attempt row itself is the credit ledger.
 
 import { query } from './db.js';

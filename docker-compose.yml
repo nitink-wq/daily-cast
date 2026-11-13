@@ -1,5 +1,5 @@
 # Local dev/test stack. Mirrors the production topology:
-#   db  ->  migrate (runs once)  ->  pool (publishes today's content)  ->  app
+#   db  ->  migrate (runs once)  ->  app
 # Open http://localhost:3000/?user_id=test-user-1 after `docker compose up`.
 services:
   db:
@@ -29,17 +29,6 @@ services:
       db:
         condition: service_healthy
 
-  # One-shot: publishes today's content pool (idempotent; skips if present).
-  # In production this is the daily CronJob.
-  pool:
-    build: .
-    command: npm run pool:generate
-    environment:
-      DATABASE_URL: postgres://dailycast:dailycast@db:5432/dailycast
-    depends_on:
-      migrate:
-        condition: service_completed_successfully
-
   app:
     build: .
     environment:
@@ -52,7 +41,7 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      pool:
+      migrate:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/healthz"]

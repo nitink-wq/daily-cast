@@ -4,3 +4,6 @@ node_modules/
 .DS_Store
 # dev-only artifact: index.html with a mock API injected for local preview
 preview.html
+# local PGlite data dir — created if the dev Postgres is ever started with
+# this repo as cwd. Never belongs in git.
+data/
