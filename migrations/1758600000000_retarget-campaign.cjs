@@ -1,11 +1,13 @@
 /**
  * Retarget campaign: a one-time link, not a daily surface.
  *
- * By this point (after 1757600000000_remove-insight-persistent-wallet)
- * content_pool_* is already gone and user_daily_states/redemptions hold the
- * old per-day wallet model. Neither fits here: this campaign gives each
- * user exactly castsPerDay rolls ONCE, ever — no daily reset — so it needs
- * no `day` key at all. Drop both and replace with `retarget_spins`: ONE row
+ * By this point (after 1757600000000_remove-insight-persistent-wallet and
+ * 1757700000000_redash-wallet-sync) content_pool_* is already gone,
+ * user_daily_states/redemptions hold the old per-day wallet model, and
+ * redash_wallet_sync mirrors the booking-gate sync. None of that fits here:
+ * this campaign gives each user exactly castsPerDay rolls ONCE, ever — no
+ * daily reset, no booking gate — so it needs no `day` key and no Redash
+ * mirror at all. Drop all three and replace with `retarget_spins`: ONE row
  * per user_id, forever.
  *
  * `coin_credit_attempts` is reused as-is for the at-most-once Coin API gate
@@ -18,6 +20,7 @@ exports.shorthands = undefined;
 exports.up = (pgm) => {
   pgm.dropTable('redemptions');
   pgm.dropTable('user_daily_states');
+  pgm.dropTable('redash_wallet_sync');
 
   pgm.createTable('retarget_spins', {
     user_id: { type: 'text', notNull: true, primaryKey: true },
@@ -76,4 +79,10 @@ exports.down = (pgm) => {
     created_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
   });
   pgm.createIndex('redemptions', ['user_id']);
+
+  pgm.createTable('redash_wallet_sync', {
+    user_id: { type: 'text', notNull: true, primaryKey: true },
+    current_wallet_balance: { type: 'numeric', notNull: true },
+    synced_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
+  });
 };
