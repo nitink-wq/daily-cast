@@ -1,27 +1,25 @@
 /**
  * Retarget campaign: a one-time link, not a daily surface.
  *
- * By this point (after 1757600000000_remove-insight-persistent-wallet and
- * 1757700000000_redash-wallet-sync) content_pool_* is already gone,
- * user_daily_states/redemptions hold the old per-day wallet model, and
- * redash_wallet_sync mirrors the booking-gate sync. None of that fits here:
- * this campaign gives each user exactly castsPerDay rolls ONCE, ever — no
- * daily reset, no booking gate — so it needs no `day` key and no Redash
- * mirror at all. Drop all three and replace with `retarget_spins`: ONE row
- * per user_id, forever.
+ * ADDITIVE, not destructive: `redemptions`, `user_daily_states`, and
+ * `redash_wallet_sync` (from the previous daily-dice/booking-gate lineage
+ * this DB was running) are left exactly as they are — real wallet/
+ * redemption history must not be touched. The new code never reads or
+ * writes any of them; they just sit there unused, preserved in case they're
+ * needed later.
  *
- * `coin_credit_attempts` is reused as-is for the at-most-once Coin API gate
- * — it already only needs a `day` value for bookkeeping, not for any
- * gameplay logic.
+ * `retarget_spins` is the only table this campaign needs: ONE row per
+ * user_id, forever — no `day` key, because a user gets exactly castsPerDay
+ * rolls ONCE, ever, not per day.
+ *
+ * `coin_credit_attempts` (from an earlier migration, still present) is
+ * reused as-is for the at-most-once Coin API gate — it already only needs a
+ * `day` value for bookkeeping, not for any gameplay logic.
  */
 
 exports.shorthands = undefined;
 
 exports.up = (pgm) => {
-  pgm.dropTable('redemptions');
-  pgm.dropTable('user_daily_states');
-  pgm.dropTable('redash_wallet_sync');
-
   pgm.createTable('retarget_spins', {
     user_id: { type: 'text', notNull: true, primaryKey: true },
     casts_used: { type: 'integer', notNull: true, default: 0 },
@@ -44,45 +42,6 @@ exports.up = (pgm) => {
   });
 };
 
-// Deliberately asymmetric: this branch's whole point is to retire the old
-// per-day wallet model, not coexist with it. `down` restores the SHAPE left
-// by 1757600000000 (persistent wallet, no selections/content-pool columns)
-// but does not attempt to resurrect any data that was in retarget_spins.
 exports.down = (pgm) => {
   pgm.dropTable('retarget_spins');
-
-  pgm.createTable('user_daily_states', {
-    user_id: { type: 'text', notNull: true },
-    day: { type: 'date', notNull: true },
-    casts_used: { type: 'integer', notNull: true, default: 0 },
-    earned: { type: 'integer', notNull: true, default: 0 },
-    reward_plan: { type: 'jsonb', notNull: true },
-    redeemed_amount: { type: 'integer', notNull: true, default: 0 },
-    created_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
-    updated_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
-  });
-  pgm.addConstraint('user_daily_states', 'user_daily_states_pkey', {
-    primaryKey: ['user_id', 'day'],
-  });
-  pgm.addConstraint('user_daily_states', 'user_daily_states_casts_nonneg', {
-    check: 'casts_used >= 0',
-  });
-  pgm.addConstraint('user_daily_states', 'user_daily_states_earned_nonneg', {
-    check: 'earned >= 0',
-  });
-
-  pgm.createTable('redemptions', {
-    id: { type: 'bigserial', primaryKey: true },
-    user_id: { type: 'text', notNull: true },
-    amount: { type: 'integer', notNull: true },
-    idempotency_key: { type: 'text', notNull: true, unique: true },
-    created_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
-  });
-  pgm.createIndex('redemptions', ['user_id']);
-
-  pgm.createTable('redash_wallet_sync', {
-    user_id: { type: 'text', notNull: true, primaryKey: true },
-    current_wallet_balance: { type: 'numeric', notNull: true },
-    synced_at: { type: 'timestamptz', notNull: true, default: pgm.func('now()') },
-  });
 };
